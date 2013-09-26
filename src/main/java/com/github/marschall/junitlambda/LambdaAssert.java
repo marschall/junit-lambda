@@ -16,7 +16,7 @@ public final class LambdaAssert {
     try {
       Lookup lookup = MethodHandles.lookup();
       EAT_EXCEPTION = lookup.findStatic(LambdaAssert.class, "eatException", MethodType.methodType(Void.TYPE, Throwable.class));
-      CALL_PROTECTED = lookup.findStatic(LambdaAssert.class, "callProtected", MethodType.methodType(Void.TYPE, Block.class, Class.class));
+      CALL_PROTECTED = lookup.findStatic(LambdaAssert.class, "callProtected", MethodType.methodType(Void.TYPE, String.class, Block.class, Class.class));
     } catch (ReflectiveOperationException e) {
       throw new RuntimeException("could not initialize LambdaAssert", e);
     }
@@ -53,7 +53,7 @@ public final class LambdaAssert {
       return;
     }
     
-    MethodHandle call = MethodHandles.insertArguments(CALL_PROTECTED, 0, block, expected);
+    MethodHandle call = MethodHandles.insertArguments(CALL_PROTECTED, 0, message, block, expected);
     MethodHandle verification = MethodHandles.catchException(call, expected, EAT_EXCEPTION);
     try {
       verification.invokeWithArguments();
@@ -73,9 +73,9 @@ public final class LambdaAssert {
     assertRaises(null, block, expected);
   }
   
-  private static void callProtected(Block block, Class<? extends Throwable> expected) throws Exception {
+  private static void callProtected(String message, Block block, Class<? extends Throwable> expected) throws Exception {
     block.value();
-    failNotRaised(null, expected);
+    failNotRaised(message, expected);
   }
 
   private static void failNotRaised(String message, Class<? extends Throwable> expected) {
