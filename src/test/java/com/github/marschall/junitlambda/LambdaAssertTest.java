@@ -1,6 +1,6 @@
 package com.github.marschall.junitlambda;
 
-import static com.github.marschall.junitlambda.LambdaAssert.shouldRaise;
+import static com.github.marschall.junitlambda.LambdaAssert.assertRaises;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,7 +11,7 @@ public class LambdaAssertTest {
   
   @Test(expected = AssertionError.class)
   public void doesNotRaiseRuntime() {
-    shouldRaise(new Block() {
+    assertRaises(new Block() {
       
       public void value() {
       }
@@ -20,7 +20,7 @@ public class LambdaAssertTest {
   
   @Test(expected = AssertionError.class)
   public void doesRaiseWrongRuntime() {
-    shouldRaise(new Block() {
+    assertRaises(new Block() {
       
       @Override
       public void value() throws Exception {
@@ -31,7 +31,7 @@ public class LambdaAssertTest {
   
   @Test(expected = AssertionError.class)
   public void doesRaiseCheckedInsteadOfRuntime() {
-    shouldRaise(new Block() {
+    assertRaises(new Block() {
       
       public void value() throws IOException {
         throw new IOException();
@@ -41,7 +41,7 @@ public class LambdaAssertTest {
 
   @Test
   public void doesRaiseRuntimeExact() {
-    shouldRaise(new Block() {
+    assertRaises(new Block() {
 
       public void value() {
         throw new RuntimeException();
@@ -51,7 +51,7 @@ public class LambdaAssertTest {
   
   @Test
   public void doesRaiseRuntimeSubclass() {
-    shouldRaise(new Block() {
+    assertRaises(new Block() {
       
       public void value() {
         throw new IndexOutOfBoundsException();
@@ -61,7 +61,7 @@ public class LambdaAssertTest {
   
   @Test
   public void doesRaiseCheckedExact() {
-    shouldRaise(new Block() {
+    assertRaises(new Block() {
       
       public void value() throws IOException {
         throw new IOException();
@@ -71,7 +71,7 @@ public class LambdaAssertTest {
   
   @Test
   public void doesRaiseCheckedSubclass() {
-    shouldRaise(new Block() {
+    assertRaises(new Block() {
       
       public void value() throws IOException {
         throw new FileNotFoundException();
@@ -81,7 +81,7 @@ public class LambdaAssertTest {
   
   @Test
   public void assertionErrorRaised() {
-    shouldRaise(new Block() {
+    assertRaises(new Block() {
       
       public void value() {
         throw new AssertionError();
@@ -91,7 +91,7 @@ public class LambdaAssertTest {
   
   @Test(expected = AssertionError.class)
   public void assertionErrorNotRaised() {
-    shouldRaise(new Block() {
+    assertRaises(new Block() {
       
       public void value() {
       }

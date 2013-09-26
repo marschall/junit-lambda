@@ -26,7 +26,16 @@ public final class LambdaAssert {
     throw new AssertionError("not instantiable");
   }
 
-  public static void shouldRaise(Block block, Class<? extends Throwable> expected) {
+  /**
+   * Asserts that the evaluation of a block throws an exception. If it
+   * does not an {@link AssertionError} is thrown with the given message.
+   *
+   * @param message the identifying message for the {@link AssertionError}
+   *  ({@code null} okay)
+   * @param block block of code to be executed
+   * @param expected expected exception type
+   */
+  public static void assertRaises(String message, Block block, Class<? extends Throwable> expected) {
     if (AssertionError.class.isAssignableFrom(expected)) {
       // needed to work around that an AssertionError is raised if no exception is raised
       boolean raised = true;
@@ -51,6 +60,17 @@ public final class LambdaAssert {
     } catch (Throwable e) {
       throw new AssertionError("unexpected exception: " + e.getClass() + " expected: " + expected, e);
     }
+  }
+  
+  /**
+   * Asserts that the evaluation of a block throws an exception. If it
+   * does not an {@link AssertionError} is thrown.
+   *
+   * @param block block of code to be executed
+   * @param expected expected exception type
+   */
+  public static void assertRaises(Block block, Class<? extends Throwable> expected) {
+    assertRaises(null, block, expected);
   }
   
   private static void callProtected(Block block, Class<? extends Throwable> expected) throws Exception {
