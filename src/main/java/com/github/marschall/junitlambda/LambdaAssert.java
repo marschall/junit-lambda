@@ -32,6 +32,18 @@ public final class LambdaAssert {
   }
 
   public static void shouldRaise(Callable<?> function, Class<? extends Exception> expected) {
+    if (AssertionError.class.isAssignableFrom(expected)) {
+      // needed to work around that an AssertionError is raised if no exception is raised
+      try {
+        function.call();
+      } catch (AssertionError e) {
+        // we expect this
+      } catch (Exception e) {
+        exceptionCaught(null, expected, e);
+      }
+      return;
+    }
+    
     MethodHandle call = CALLABLE_CALL.bindTo(function);
     //    MethodHandle failNotRaised = MethodHandles.insertArguments(FAIL_NOT_RAISED, 0, null, expected);
     MethodHandle verification = MethodHandles.catchException(call, expected, EAT_EXCEPTION);
@@ -50,17 +62,17 @@ public final class LambdaAssert {
     return null;
   }
 
-  private static void exceptionCaught(String message, Class<? extends Exception> expected, Class<? extends Exception> actual) {
+  private static void exceptionCaught(String message, Class<? extends Exception> expected, Exception actual) {
     fail(formatNotRaised(message, expected, actual));
   }
 
-  private static String formatNotRaised(String message, Class<? extends Exception> expected, Class<? extends Exception> actual) {
+  private static String formatNotRaised(String message, Class<? extends Exception> expected, Exception actual) {
     String formatted = "";
     if (message != null && !message.equals("")) {
       formatted = message + " ";
     }
     if (actual != null) {
-      return formatted + "should have thrown: " + expected + " but did throw: " + actual;
+      return formatted + "should have thrown: " + expected + " but did throw: " + actual.getClass();
     } else {
       return formatted + "should have thrown: " + expected + " but did not throw anything";
     }
