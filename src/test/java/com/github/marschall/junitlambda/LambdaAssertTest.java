@@ -26,7 +26,7 @@ public class LambdaAssertTest {
       public void value() throws Exception {
         throw new NullPointerException();
       }
-    }, RuntimeException.class);
+    }, IllegalArgumentException.class);
   }
   
   @Test(expected = AssertionError.class)
