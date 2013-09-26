@@ -11,17 +11,13 @@ import java.util.concurrent.Callable;
 public final class LambdaAssert {
 
   private static final MethodHandle EAT_EXCEPTION;
-  private static final MethodHandle CALLABLE_CALL;
-  private static final MethodHandle FAIL_NOT_RAISED;
+  private static final MethodHandle CALL_PROTECTED;
 
   static {
     try {
       Lookup lookup = MethodHandles.lookup();
-      EAT_EXCEPTION = lookup.findStatic(LambdaAssert.class, "eatException", MethodType.methodType(Object.class, Throwable.class));
-      FAIL_NOT_RAISED = lookup.findStatic(LambdaAssert.class, "failNotRaised", MethodType.methodType(Void.TYPE, String.class, Class.class));
-
-      Lookup publicLookup = MethodHandles.publicLookup();
-      CALLABLE_CALL = publicLookup.findVirtual(Callable.class, "call", MethodType.methodType(Object.class));
+      EAT_EXCEPTION = lookup.findStatic(LambdaAssert.class, "eatException", MethodType.methodType(Void.TYPE, Throwable.class));
+      CALL_PROTECTED = lookup.findStatic(LambdaAssert.class, "callProtected", MethodType.methodType(Void.TYPE, Callable.class, Class.class));
     } catch (ReflectiveOperationException e) {
       throw new RuntimeException("could not initialize LambdaAssert", e);
     }
@@ -49,8 +45,7 @@ public final class LambdaAssert {
       return;
     }
     
-    MethodHandle call = CALLABLE_CALL.bindTo(function);
-    //    MethodHandle failNotRaised = MethodHandles.insertArguments(FAIL_NOT_RAISED, 0, null, expected);
+    MethodHandle call = MethodHandles.insertArguments(CALL_PROTECTED, 0, function, expected);
     MethodHandle verification = MethodHandles.catchException(call, expected, EAT_EXCEPTION);
     try {
       verification.invokeWithArguments();
@@ -58,13 +53,18 @@ public final class LambdaAssert {
       throw new AssertionError("unexpected exception: " + e.getClass() + " expected: " + expected, e);
     }
   }
+  
+  private static void callProtected(Callable<?> function, Class<? extends Throwable> expected) throws Exception {
+    function.call();
+    failNotRaised(null, expected);
+  }
 
   private static void failNotRaised(String message, Class<? extends Throwable> expected) {
     fail(formatNotRaised(message, expected, null));
   }
 
-  private static Object eatException(Throwable exception) {
-    return null;
+  private static void eatException(Throwable exception) {
+    // expected
   }
 
   private static void exceptionCaught(String message, Class<? extends Throwable> expected, Throwable actual) {
