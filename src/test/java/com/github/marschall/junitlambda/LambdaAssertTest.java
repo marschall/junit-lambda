@@ -4,7 +4,6 @@ import static com.github.marschall.junitlambda.LambdaAssert.shouldRaise;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.concurrent.Callable;
 
 import org.junit.Test;
 
@@ -12,21 +11,19 @@ public class LambdaAssertTest {
   
   @Test(expected = AssertionError.class)
   public void doesNotRaiseRuntime() {
-    shouldRaise(new Callable<Void>() {
+    shouldRaise(new Block() {
       
-      @Override
-      public Void call() throws Exception {
-        return null;
+      public void value() {
       }
     }, RuntimeException.class);
   }
   
   @Test(expected = AssertionError.class)
   public void doesRaiseWrongRuntime() {
-    shouldRaise(new Callable<Void>() {
+    shouldRaise(new Block() {
       
       @Override
-      public Void call() throws Exception {
+      public void value() throws Exception {
         throw new NullPointerException();
       }
     }, RuntimeException.class);
@@ -34,10 +31,9 @@ public class LambdaAssertTest {
   
   @Test(expected = AssertionError.class)
   public void doesRaiseCheckedInsteadOfRuntime() {
-    shouldRaise(new Callable<Void>() {
+    shouldRaise(new Block() {
       
-      @Override
-      public Void call() throws Exception {
+      public void value() throws IOException {
         throw new IOException();
       }
     }, RuntimeException.class);
@@ -45,10 +41,9 @@ public class LambdaAssertTest {
 
   @Test
   public void doesRaiseRuntimeExact() {
-    shouldRaise(new Callable<Void>() {
+    shouldRaise(new Block() {
 
-      @Override
-      public Void call() throws Exception {
+      public void value() {
         throw new RuntimeException();
       }
     }, RuntimeException.class);
@@ -56,10 +51,9 @@ public class LambdaAssertTest {
   
   @Test
   public void doesRaiseRuntimeSubclass() {
-    shouldRaise(new Callable<Void>() {
+    shouldRaise(new Block() {
       
-      @Override
-      public Void call() throws Exception {
+      public void value() {
         throw new IndexOutOfBoundsException();
       }
     }, RuntimeException.class);
@@ -67,10 +61,9 @@ public class LambdaAssertTest {
   
   @Test
   public void doesRaiseCheckedExact() {
-    shouldRaise(new Callable<Void>() {
+    shouldRaise(new Block() {
       
-      @Override
-      public Void call() throws Exception {
+      public void value() throws IOException {
         throw new IOException();
       }
     }, IOException.class);
@@ -78,10 +71,9 @@ public class LambdaAssertTest {
   
   @Test
   public void doesRaiseCheckedSubclass() {
-    shouldRaise(new Callable<Void>() {
+    shouldRaise(new Block() {
       
-      @Override
-      public Void call() throws Exception {
+      public void value() throws IOException {
         throw new FileNotFoundException();
       }
     }, IOException.class);
@@ -89,10 +81,9 @@ public class LambdaAssertTest {
   
   @Test
   public void assertionErrorRaised() {
-    shouldRaise(new Callable<Void>() {
+    shouldRaise(new Block() {
       
-      @Override
-      public Void call() throws Exception {
+      public void value() {
         throw new AssertionError();
       }
     }, AssertionError.class);
@@ -100,11 +91,9 @@ public class LambdaAssertTest {
   
   @Test(expected = AssertionError.class)
   public void assertionErrorNotRaised() {
-    shouldRaise(new Callable<Void>() {
+    shouldRaise(new Block() {
       
-      @Override
-      public Void call() throws Exception {
-        return null;
+      public void value() {
       }
     }, AssertionError.class);
   }

@@ -6,7 +6,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
-import java.util.concurrent.Callable;
 
 public final class LambdaAssert {
 
@@ -17,7 +16,7 @@ public final class LambdaAssert {
     try {
       Lookup lookup = MethodHandles.lookup();
       EAT_EXCEPTION = lookup.findStatic(LambdaAssert.class, "eatException", MethodType.methodType(Void.TYPE, Throwable.class));
-      CALL_PROTECTED = lookup.findStatic(LambdaAssert.class, "callProtected", MethodType.methodType(Void.TYPE, Callable.class, Class.class));
+      CALL_PROTECTED = lookup.findStatic(LambdaAssert.class, "callProtected", MethodType.methodType(Void.TYPE, Block.class, Class.class));
     } catch (ReflectiveOperationException e) {
       throw new RuntimeException("could not initialize LambdaAssert", e);
     }
@@ -27,12 +26,12 @@ public final class LambdaAssert {
     throw new AssertionError("not instantiable");
   }
 
-  public static void shouldRaise(Callable<?> function, Class<? extends Throwable> expected) {
+  public static void shouldRaise(Block block, Class<? extends Throwable> expected) {
     if (AssertionError.class.isAssignableFrom(expected)) {
       // needed to work around that an AssertionError is raised if no exception is raised
       boolean raised = true;
       try {
-        function.call();
+        block.value();
         raised = false;
       } catch (AssertionError e) {
         // we expect this
@@ -45,7 +44,7 @@ public final class LambdaAssert {
       return;
     }
     
-    MethodHandle call = MethodHandles.insertArguments(CALL_PROTECTED, 0, function, expected);
+    MethodHandle call = MethodHandles.insertArguments(CALL_PROTECTED, 0, block, expected);
     MethodHandle verification = MethodHandles.catchException(call, expected, EAT_EXCEPTION);
     try {
       verification.invokeWithArguments();
@@ -54,8 +53,8 @@ public final class LambdaAssert {
     }
   }
   
-  private static void callProtected(Callable<?> function, Class<? extends Throwable> expected) throws Exception {
-    function.call();
+  private static void callProtected(Block block, Class<? extends Throwable> expected) throws Exception {
+    block.value();
     failNotRaised(null, expected);
   }
 
