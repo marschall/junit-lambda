@@ -9,4 +9,4 @@ JUnit extensions build on Java 8 lambdas. In theory it works with Java 7 but you
 FAQ
 ---
 ### Why the Java 7 requirement?
-Because it uses (MethodHandle)[http://docs.oracle.com/javase/7/docs/api/java/lang/invoke/MethodHandle.html] for dynamic catch.
+Because it uses [MethodHandle](http://docs.oracle.com/javase/7/docs/api/java/lang/invoke/MethodHandle.html) for dynamic catch.
