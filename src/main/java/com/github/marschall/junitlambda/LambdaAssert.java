@@ -17,7 +17,7 @@ public final class LambdaAssert {
   static {
     try {
       Lookup lookup = MethodHandles.lookup();
-      EAT_EXCEPTION = lookup.findStatic(LambdaAssert.class, "eatException", MethodType.methodType(Void.TYPE, Exception.class));
+      EAT_EXCEPTION = lookup.findStatic(LambdaAssert.class, "eatException", MethodType.methodType(Object.class, Exception.class));
       FAIL_NOT_RAISED = lookup.findStatic(LambdaAssert.class, "failNotRaised", MethodType.methodType(Void.TYPE, String.class, Class.class));
       
       Lookup publicLookup = MethodHandles.publicLookup();
@@ -46,8 +46,8 @@ public final class LambdaAssert {
     fail(formatNotRaised(message, expected, null));
   }
   
-  private static void eatException(Exception exception) {
-    
+  private static Object eatException(Exception exception) {
+    return null;
   }
   
   private static void exceptionCaught(String message, Class<? extends Exception> expected, Class<? extends Exception> actual) {
