@@ -9,6 +9,39 @@ import java.util.concurrent.Callable;
 import org.junit.Test;
 
 public class LambdaAssertTest {
+  
+  @Test(expected = AssertionError.class)
+  public void doesNotRaiseRuntime() {
+    shouldRaise(new Callable<Void>() {
+      
+      @Override
+      public Void call() throws Exception {
+        return null;
+      }
+    }, RuntimeException.class);
+  }
+  
+  @Test(expected = AssertionError.class)
+  public void doesRaiseWrongRuntime() {
+    shouldRaise(new Callable<Void>() {
+      
+      @Override
+      public Void call() throws Exception {
+        throw new NullPointerException();
+      }
+    }, RuntimeException.class);
+  }
+  
+  @Test(expected = AssertionError.class)
+  public void doesRaiseCheckedInsteadOfRuntime() {
+    shouldRaise(new Callable<Void>() {
+      
+      @Override
+      public Void call() throws Exception {
+        throw new IOException();
+      }
+    }, RuntimeException.class);
+  }
 
   @Test
   public void doesRaiseRuntimeExact() {
