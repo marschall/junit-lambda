@@ -17,7 +17,7 @@ public final class LambdaAssert {
   static {
     try {
       Lookup lookup = MethodHandles.lookup();
-      EAT_EXCEPTION = lookup.findStatic(LambdaAssert.class, "eatException", MethodType.methodType(Object.class, Exception.class));
+      EAT_EXCEPTION = lookup.findStatic(LambdaAssert.class, "eatException", MethodType.methodType(Object.class, Throwable.class));
       FAIL_NOT_RAISED = lookup.findStatic(LambdaAssert.class, "failNotRaised", MethodType.methodType(Void.TYPE, String.class, Class.class));
 
       Lookup publicLookup = MethodHandles.publicLookup();
@@ -31,15 +31,20 @@ public final class LambdaAssert {
     throw new AssertionError("not instantiable");
   }
 
-  public static void shouldRaise(Callable<?> function, Class<? extends Exception> expected) {
+  public static void shouldRaise(Callable<?> function, Class<? extends Throwable> expected) {
     if (AssertionError.class.isAssignableFrom(expected)) {
       // needed to work around that an AssertionError is raised if no exception is raised
+      boolean raised = true;
       try {
         function.call();
+        raised = false;
       } catch (AssertionError e) {
         // we expect this
       } catch (Exception e) {
         exceptionCaught(null, expected, e);
+      }
+      if (!raised) {
+        failNotRaised(null, expected);
       }
       return;
     }
@@ -54,19 +59,19 @@ public final class LambdaAssert {
     }
   }
 
-  private static void failNotRaised(String message, Class<? extends Exception> expected) {
+  private static void failNotRaised(String message, Class<? extends Throwable> expected) {
     fail(formatNotRaised(message, expected, null));
   }
 
-  private static Object eatException(Exception exception) {
+  private static Object eatException(Throwable exception) {
     return null;
   }
 
-  private static void exceptionCaught(String message, Class<? extends Exception> expected, Exception actual) {
+  private static void exceptionCaught(String message, Class<? extends Throwable> expected, Throwable actual) {
     fail(formatNotRaised(message, expected, actual));
   }
 
-  private static String formatNotRaised(String message, Class<? extends Exception> expected, Exception actual) {
+  private static String formatNotRaised(String message, Class<? extends Throwable> expected, Throwable actual) {
     String formatted = "";
     if (message != null && !message.equals("")) {
       formatted = message + " ";
