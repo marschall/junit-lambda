@@ -86,5 +86,27 @@ public class LambdaAssertTest {
       }
     }, IOException.class);
   }
+  
+//  @Test
+//  public void assertionErrorRaised() {
+//    shouldRaise(new Callable<Void>() {
+//      
+//      @Override
+//      public Void call() throws Exception {
+//        throw new AssertionError();
+//      }
+//    }, AssertionError.class);
+//  }
+//  
+//  @Test(expected = AssertionError.class)
+//  public void assertionErrorNotRaised() {
+//    shouldRaise(new Callable<Void>() {
+//      
+//      @Override
+//      public Void call() throws Exception {
+//        return null;
+//      }
+//    }, AssertionError.class);
+//  }
 
 }
