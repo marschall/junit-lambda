@@ -4,8 +4,10 @@
   <groupId>com.github.marschall</groupId>
   <artifactId>junit-lambda</artifactId>
   <version>0.1.0-SNAPSHOT</version>
-  <name>JUnit Lambda Extensions</name>
+  <packaging>jar</packaging>
   <inceptionYear>2013</inceptionYear>
+  <name>JUnit Lambda Extensions</name>
+  <description>JUnit extensions that make use of Java 8 lambdas.</description>
 
   <url>https://github.com/marschall/junit-lambda</url>
 
