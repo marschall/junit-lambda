@@ -7,6 +7,12 @@ import java.io.IOException;
 
 import static com.github.marschall.junitlambda.LambdaAssert.assertRaises;
 
+/**
+ * TODO AC: JavaDoc
+ *
+ * @author Philippe Marschall
+ * @author Alasdair Collinson
+ */
 public class LambdaAssertTest {
   
   @Test(expected = AssertionError.class)

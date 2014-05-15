@@ -28,6 +28,17 @@
         <role>developer</role>
       </roles>
     </developer>
+    <developer>
+      <id>blalasaadri</id>
+      <name>Alasdair Collinson</name>
+      <organization>Senacor Technologies AG</organization>
+      <organizationUrl>http://www.senacor.com/</organizationUrl>
+      <email>alasdair.collinson@senacor.com</email>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
   </developers>
   
   <licenses>
