@@ -29,6 +29,12 @@ public class ParallelJUnitTestRunner extends BlockJUnit4ClassRunner {
         }
     };
 
+    /**
+     * TODO AC: JavaDoc
+     *
+     * @param klass
+     * @throws InitializationError
+     */
     public ParallelJUnitTestRunner(Class<?> klass) throws InitializationError {
         super(klass);
         setScheduler(fScheduler);
@@ -45,10 +51,8 @@ public class ParallelJUnitTestRunner extends BlockJUnit4ClassRunner {
     }
 
     private void runChildren(final RunNotifier notifier) {
-        getFilteredChildren().parallelStream().forEach(each -> {
-            System.out.println(each.getName());
-            fScheduler.schedule(() -> ParallelJUnitTestRunner.this.runChild(each, notifier));
-        });
+        getFilteredChildren().parallelStream().forEach(each ->
+                fScheduler.schedule(() -> ParallelJUnitTestRunner.this.runChild(each, notifier)));
         fScheduler.finished();
     }
 
