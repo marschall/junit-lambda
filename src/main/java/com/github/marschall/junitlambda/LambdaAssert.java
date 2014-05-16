@@ -1,9 +1,5 @@
 package com.github.marschall.junitlambda;
 
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.junit.Assert;
-
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
@@ -32,6 +28,8 @@ import static org.junit.Assert.fail;
  * @see java.lang.AssertionError
  */
 public final class LambdaAssert {
+
+    private static final String FAILED_MSG = "Test failed";
 
     private static final MethodHandle EAT_EXCEPTION;
     private static final MethodHandle CALL_PROTECTED;
@@ -230,17 +228,25 @@ public final class LambdaAssert {
      * </pre>
      *
      * @param msg TODO AC
-     * @param actual TODO AC
+     * @param input TODO AC
      * @param predicate TODO AC
      * @param <T> TODO AC
      */
-    public static <T> void assertThat(String msg, T actual, Predicate<T> predicate) {
-        if(!predicate.test(actual)) {
+    public static <T> void assertThat(String msg, T input, Predicate<T> predicate) {
+        if(!predicate.test(input)) {
             StringBuilder builder = new StringBuilder();
-            builder.append(msg);
-            builder.append("\nExpected: ");
-            builder.append(actual);
+            if(msg != null && !"".equals(msg)) {
+                builder.append(msg);
+            } else {
+                builder.append(FAILED_MSG);
+            }
+            builder.append("\nInput: ");
+            builder.append(input);
             // TODO: ideally print string representation of predicate
+            if(predicate instanceof NamedPredicate) {
+                builder.append("\nPredicate: ");
+                builder.append(predicate);
+            }
             throw new AssertionError(builder.toString());
         }
 //        Assert.assertThat(msg, actual, new BaseMatcher<T>() {
@@ -259,7 +265,32 @@ public final class LambdaAssert {
 //        });
     }
 
-    public static <T> void assertThat(T actual, Predicate<T> predicate) {
-        assertThat(null, actual, predicate);
+    public static <T> void assertThat(T input, Predicate<T> predicate) {
+        assertThat(null, input, predicate);
+    }
+
+    public static <T> Predicate<T> $(String name, Predicate<T> predicate) {
+        return new NamedPredicate<>(name, predicate);
+    }
+
+    public static class NamedPredicate<T> implements Predicate<T> {
+
+        final String description;
+        final Predicate<T> predicate;
+
+        private NamedPredicate(String description, Predicate<T> predicate) {
+            this.predicate = predicate;
+            this.description = description;
+        }
+
+        @Override
+        public boolean test(T t) {
+            return predicate.test(t);
+        }
+
+        @Override
+        public String toString() {
+            return description;
+        }
     }
 }

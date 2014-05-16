@@ -136,16 +136,12 @@ public class LambdaAssertTest {
     @Test
     public void testAssertThatPositive() {
         assertThat(names, n -> n.contains("Bob"));
+        assertThat("Hello World", $("letters and spaces", s -> s.matches("[\\w\\s]*")));
     }
 
     @Test(expected = AssertionError.class)
     public void testAssertThatNegative() {
         assertThat(names, n -> n.contains("Greg"));
-    }
-
-    @Test
-    public void testFail() {
-        assertThat("Help! Integers don't work", 0, n -> n == 1);
     }
 }
 
