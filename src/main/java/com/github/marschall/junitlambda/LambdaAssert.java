@@ -15,7 +15,7 @@ import static org.junit.Assert.fail;
  * are recorded. These methods can be used directly:
  * <code>LambdaAssert.assertRaises(...)</code>, however, they read better if they
  * are referenced through static import:<br/>
- * <p>
+ * <p/>
  * <pre>
  * import static com.github.marschall.junitlambda.LambdaAssert.*;
  *    ...
@@ -39,8 +39,10 @@ public final class LambdaAssert {
     static {
         try {
             Lookup lookup = MethodHandles.lookup();
-            EAT_EXCEPTION = lookup.findStatic(LambdaAssert.class, "eatException", MethodType.methodType(Void.TYPE, Throwable.class));
-            CALL_PROTECTED = lookup.findStatic(LambdaAssert.class, "callProtected", MethodType.methodType(Void.TYPE, String.class, Block.class, Class.class));
+            EAT_EXCEPTION = lookup.findStatic(RaiseHandler.class, "eatException",
+                    MethodType.methodType(Void.TYPE, Throwable.class));
+            CALL_PROTECTED = lookup.findStatic(RaiseHandler.class, "callProtected",
+                    MethodType.methodType(Void.TYPE, String.class, Block.class, Class.class));
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("could not initialize LambdaAssert", e);
         }
@@ -72,10 +74,10 @@ public final class LambdaAssert {
             } catch (AssertionError e) {
                 // we expect this
             } catch (Exception e) {
-                exceptionCaught(null, expected, e);
+                RaiseHandler.exceptionCaught(null, expected, e);
             }
             if (!raised) {
-                failNotRaised(null, expected);
+                RaiseHandler.failNotRaised(null, expected);
             }
             return;
         }
@@ -101,74 +103,89 @@ public final class LambdaAssert {
     }
 
     /**
-     * Called by {@link Lookup#findStatic(Class, String, java.lang.invoke.MethodType)}.
-     * TODO AC
-     *
-     * @param message  TODO AC
-     * @param block    TODO AC
-     * @param expected TODO AC
-     * @throws Exception TODO AC
+     * A utility class for bundeling various functions required for the
+     * {@link com.github.marschall.junitlambda.LambdaAssert#assertRaises(String, Block, Class)} and
+     * {@link com.github.marschall.junitlambda.LambdaAssert#assertRaises(Block, Class)} functions.
      */
-    @SuppressWarnings("unused")
-    private static void callProtected(String message, Block block, Class<? extends Throwable> expected) throws Exception {
-        block.value();
-        failNotRaised(message, expected);
-    }
+    private static class RaiseHandler {
 
-    /**
-     * TODO AC
-     *
-     * @param message  TODO AC
-     * @param expected TODO AC
-     */
-    private static void failNotRaised(String message, Class<? extends Throwable> expected) {
-        fail(formatNotRaised(message, expected, null));
-    }
-
-    /**
-     * Called by {@link Lookup#findStatic(Class, String, java.lang.invoke.MethodType)}.
-     * TODO AC
-     *
-     * @param exception TODO AC
-     */
-    @SuppressWarnings("unused")
-    private static void eatException(Throwable exception) {
-        // expected
-    }
-
-    /**
-     * TODO AC
-     *
-     * @param message  TODO AC
-     * @param expected TODO AC
-     * @param actual   TODO AC
-     */
-    private static void exceptionCaught(String message, Class<? extends Throwable> expected, Throwable actual) {
-        fail(formatNotRaised(message, expected, actual));
-    }
-
-    /**
-     * TODO AC
-     *
-     * @param message  TODO AC
-     * @param expected TODO AC
-     * @param actual   TODO AC
-     * @return TODO AC
-     */
-    private static String formatNotRaised(String message, Class<? extends Throwable> expected, Throwable actual) {
-        String formatted = "";
-        if (message != null && !message.equals("")) {
-            formatted = message + " ";
+        private RaiseHandler() {
+            throw new AssertionError("not instantiable");
         }
-        if (actual != null) {
-            return formatted + "should have thrown: " + expected + " but did throw: " + actual.getClass();
-        } else {
-            return formatted + "should have thrown: " + expected + " but did not throw anything";
+
+        /**
+         * Called by {@link Lookup#findStatic(Class, String, java.lang.invoke.MethodType)}.<p/>
+         * Executes the {@link com.github.marschall.junitlambda.Block#value()} function of a given Block expression. If this
+         * doesn't raise an exception, an AssertionError is thrown.
+         *
+         * @param message  the identifying message for the {@link AssertionError} ({@code null} okay)
+         * @param block    the {@link com.github.marschall.junitlambda.Block} expression which should be executed
+         * @param expected the expected Exception
+         * @throws Exception the Exception which is thrown if the given Block expression works as intended
+         */
+        @SuppressWarnings("unused")
+        static void callProtected(String message, Block block, Class<? extends Throwable> expected)
+                throws Exception {
+            block.value();
+            failNotRaised(message, expected);
+        }
+
+        /**
+         * Fails when an expected Exception was not raised while giving some information on what went wrong.
+         *
+         * @param message  the identifying message for the {@link AssertionError} ({@code null} okay)
+         * @param expected the expected Exception
+         */
+        private static void failNotRaised(String message, Class<? extends Throwable> expected) {
+            fail(formatNotRaised(message, expected, null));
+        }
+
+        /**
+         * Called by {@link Lookup#findStatic(Class, String, java.lang.invoke.MethodType)}.<p/>
+         * Completely ignores the given exception as it is expected to be thrown.
+         *
+         * @param exception the thrown exception. Is expected and therefore ignored.s
+         */
+        @SuppressWarnings("unused")
+        static void eatException(Throwable exception) {
+            // expected
+        }
+
+        /**
+         * Called when an exception other than the expected one was caught.
+         *
+         * @param message  the identifying message for the {@link AssertionError} ({@code null} okay)
+         * @param expected the expected Exception
+         * @param actual   the actually caught Exception
+         */
+        private static void exceptionCaught(String message, Class<? extends Throwable> expected, Throwable actual) {
+            fail(formatNotRaised(message, expected, actual));
+        }
+
+        /**
+         * Formats an error message when an expected Exception was not raised.
+         *
+         * @param message  the identifying message for the {@link AssertionError} ({@code null} okay)
+         * @param expected the expected Exception
+         * @param actual   the actually caught Exception
+         * @return an error message with details about what went wrong
+         */
+        private static String formatNotRaised(String message, Class<? extends Throwable> expected, Throwable actual) {
+            String formatted = "";
+            if (message != null && !message.equals("")) {
+                formatted = message + " ";
+            }
+            if (actual != null) {
+                return String.format("%sshould have thrown: %s but did throw: %s", formatted, expected, actual.getClass());
+            } else {
+                return String.format("%sshould have thrown: %s but did not throw anything", formatted, expected);
+            }
         }
     }
 
     /**
-     * Asserts that a given {@link java.util.function.Predicate} is fulfilled for every member of the given {@link java.lang.Iterable}.
+     * Asserts that a given {@link java.util.function.Predicate} is fulfilled for every member of the given
+     * {@link java.lang.Iterable}.
      *
      * @param msg       the identifying message for the {@link AssertionError} (<code>null</code> okay)
      * @param iterable  the iterable of which all elements must fulfill the given predicate
@@ -180,7 +197,8 @@ public final class LambdaAssert {
     }
 
     /**
-     * Asserts that a given {@link java.util.function.Predicate} is fulfilled for every member of the given {@link java.lang.Iterable}.
+     * Asserts that a given {@link java.util.function.Predicate} is fulfilled for every member of the given
+     * {@link java.lang.Iterable}.
      *
      * @param iterable  the iterable of which all elements must fulfill the given predicate
      * @param predicate the predicate to be checked
@@ -191,7 +209,8 @@ public final class LambdaAssert {
     }
 
     /**
-     * Asserts that a given {@link java.util.function.Predicate} is fulfilled for every member of the given {@link java.util.Map}
+     * Asserts that a given {@link java.util.function.Predicate} is fulfilled for every member of the given
+     * {@link java.util.Map}
      *
      * @param msg       the identifying message for the {@link AssertionError} (<code>null</code> okay)
      * @param map       the map of which all elements must fulfill the given predicate
@@ -217,25 +236,26 @@ public final class LambdaAssert {
      * Asserts that <code>actual</code> satisfies the condition specified by
      * <code>predicate</code>. If not, an {@link AssertionError} is thrown with
      * the reason and information about the matcher and failing value. Example:
-     *
+     * <p/>
      * <pre>
-     *   assertThat(&quot;Help! Integers don't work&quot;, 0, n -> n == 1); // fails:
+     *   assertThat(&quot;Why isn't zero the same as one?&quot;, 0, $(&quot;equals one&quot;, n -> n == 1)); // fails:
      *     // failure message:
-     *     // Help! Integers don't work
-     *     // expected: is &lt;1&gt;
-     *     // got value: &lt;0&gt;
-     *   assertThat(&quot;Zero is one&quot;, 0, is(not(1))) // passes
+     *     // Why isn't zero the same as one?
+     *     // Input: 0
+     *     // Predicate: equals one
+     *   assertThat(&quot;One equals one.&quot;, 1, $(&quot;equals one&quot;, n -> n == 1)); // passes
      * </pre>
      *
-     * @param msg TODO AC
-     * @param input TODO AC
-     * @param predicate TODO AC
-     * @param <T> TODO AC
+     * @param msg       the identifying message for the {@link AssertionError} (<code>null</code> okay)
+     * @param input     the value with which the predicate shall be tested
+     * @param predicate the predicate to test upon the given input value
+     * @param <T>       the static type accepted by the predicate
+     * @see com.github.marschall.junitlambda.LambdaAssert#$(String, java.util.function.Predicate)
      */
     public static <T> void assertThat(String msg, T input, Predicate<T> predicate) {
-        if(!predicate.test(input)) {
+        if (!predicate.test(input)) {
             StringBuilder builder = new StringBuilder();
-            if(msg != null && !"".equals(msg)) {
+            if (msg != null && !"".equals(msg)) {
                 builder.append(msg);
             } else {
                 builder.append(FAILED_MSG);
@@ -243,42 +263,71 @@ public final class LambdaAssert {
             builder.append("\nInput: ");
             builder.append(input);
             // TODO: ideally print string representation of predicate
-            if(predicate instanceof NamedPredicate) {
+            if (predicate instanceof NamedPredicate) {
                 builder.append("\nPredicate: ");
                 builder.append(predicate);
             }
             throw new AssertionError(builder.toString());
         }
-//        Assert.assertThat(msg, actual, new BaseMatcher<T>() {
-//            @SuppressWarnings("unchecked")
-//            @Override
-//            public boolean matches(Object item) {
-//                return predicate.test((T) item);
-//            }
-//
-//            @Override
-//            public void describeTo(Description description) {
-//                // TODO: Improve readability
-//                // currently prints as 'Expected: com.something.Whatever$$Lambda$1/1234567890@1b23456f'
-//                description.appendValue(predicate);
-//            }
-//        });
     }
 
+    /**
+     * Asserts that <code>actual</code> satisfies the condition specified by
+     * <code>predicate</code>. If not, an {@link AssertionError} is thrown with
+     * the reason and information about the matcher and failing value. Example:
+     * <p/>
+     * <pre>
+     *   assertThat(&quot;Why isn't zero the same as one?&quot;, 0, $(&quot;equals one&quot;, n -> n == 1)); // fails:
+     *     // failure message:
+     *     // Why isn't zero the same as one?
+     *     // Input: 0
+     *     // Predicate: equals one
+     *   assertThat(&quot;One equals one.&quot;, 1, $(&quot;equals one&quot;, n -> n == 1)); // passes
+     * </pre>
+     *
+     * @param input     the value with which the predicate shall be tested
+     * @param predicate the predicate to test upon the given input value
+     * @param <T>       the static type accepted by the predicate
+     * @see com.github.marschall.junitlambda.LambdaAssert#$(String, java.util.function.Predicate)
+     */
     public static <T> void assertThat(T input, Predicate<T> predicate) {
         assertThat(null, input, predicate);
     }
 
-    public static <T> Predicate<T> $(String name, Predicate<T> predicate) {
-        return new NamedPredicate<>(name, predicate);
+    /**
+     * Factory method to create instances of {@link com.github.marschall.junitlambda.LambdaAssert.NamedPredicate}s
+     * which wrap around the given {@link java.util.function.Predicate} while adding a short human readable description
+     * of said predicate.
+     *
+     * @param description a short description of the given predicate. Can be a string representation, e.g.
+     *                    <code>"n -> n == 1"</code> or a more verbose explanation, e.g. <code>"equals one"</code>.
+     * @param predicate   the predicate which should be wrapped
+     * @param <T>         the static type accepted by the predicate
+     * @return a self describing named predicate
+     * @see com.github.marschall.junitlambda.LambdaAssert#assertThat(String, Object, java.util.function.Predicate)
+     */
+    public static <T> Predicate<T> $(String description, Predicate<T> predicate) {
+        return new NamedPredicate<>(description, predicate);
     }
 
+    /**
+     * A small wrapper class for {@link java.util.function.Predicate} which adds a human readable description.
+     *
+     * @param <T> the static type accepted by the predicate
+     */
     public static class NamedPredicate<T> implements Predicate<T> {
 
         final String description;
         final Predicate<T> predicate;
 
-        private NamedPredicate(String description, Predicate<T> predicate) {
+        /**
+         * Constructor.
+         *
+         * @param description a short description of the given predicate. Can be a string representation, e.g.
+         *                    <code>"n -> n == 1"</code> or a more verbose explanation, e.g. <code>"equals one"</code>.
+         * @param predicate   the predicate which should be wrapped
+         */
+        public NamedPredicate(String description, Predicate<T> predicate) {
             this.predicate = predicate;
             this.description = description;
         }

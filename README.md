@@ -1,6 +1,6 @@
 JUnit λ
 =======
-JUnit extensions build on Java 8 lambdas.
+JUnit extensions build on Java 8 lambdas. A JDK level of 1.8 is required.
 
 Assertions
 ----------
