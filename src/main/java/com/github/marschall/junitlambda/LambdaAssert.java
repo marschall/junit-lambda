@@ -144,7 +144,7 @@ public final class LambdaAssert {
          * Called by {@link Lookup#findStatic(Class, String, java.lang.invoke.MethodType)}.<p/>
          * Completely ignores the given exception as it is expected to be thrown.
          *
-         * @param exception the thrown exception. Is expected and therefore ignored.s
+         * @param exception the thrown exception. Is expected and therefore ignored.
          */
         @SuppressWarnings("unused")
         static void eatException(Throwable exception) {

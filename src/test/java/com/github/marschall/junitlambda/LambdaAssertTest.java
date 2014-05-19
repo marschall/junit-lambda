@@ -1,5 +1,6 @@
 package com.github.marschall.junitlambda;
 
+import com.github.marschall.junitlambda.annotations.ParallelTesting;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -10,19 +11,19 @@ import java.util.*;
 import static com.github.marschall.junitlambda.LambdaAssert.*;
 
 /**
- * TODO AC: JavaDoc
+ * Tests for the {@link com.github.marschall.junitlambda.LambdaAssert} class.
  *
  * @author Philippe Marschall
  * @author Alasdair Collinson
  */
-@RunWith(ParallelJUnitTestRunner.class)
+@RunWith(Java8JUnitTestRunner.class)
+@ParallelTesting(parallel = false)
 public class LambdaAssertTest {
 
     private static final Random random = new Random();
     private static Messages messages = new Messages();
     private static List<String> names = new ArrayList<>();
     private static Map<String, Integer> ages = new HashMap<>();
-
 
     static {
         names.add("Anna");
@@ -163,6 +164,10 @@ class Messages implements Iterable<Messages.Message> {
         messageList.add(message);
     }
 
+    static enum Severity {
+        LOG, WARNING, ERROR, FATAL
+    }
+
     @SuppressWarnings("unused")
     static class Message {
         private String title, reason, text;
@@ -190,10 +195,6 @@ class Messages implements Iterable<Messages.Message> {
         public String getText() {
             return text;
         }
-    }
-
-    static enum Severity {
-        LOG, WARNING, ERROR, FATAL
     }
 }
 
