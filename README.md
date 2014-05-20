@@ -14,11 +14,11 @@ Simple assertions can be made like such:
     assertThat("Hello World", s -> s.matches("[\\w\\s]*"));
 ```
 
-To get more informative descriptions of failed lambda methods you may use the `$(String description, Predicate<T> predicate)` factory method:
+To get more informative descriptions of failed lambda methods you may use the `$$(String description, Predicate<T> predicate)` factory method:
 
 ```java
-    assertForAll(Arrays.asList(1, 2, 3), $("smaller than 4", i -> i < 4));
-    assertThat("Hello World", $("letters and spaces", s -> s.matches("[\\w\\s]*")));
+    assertForAll(Arrays.asList(1, 2, 3), $$("smaller than 4", i -> i < 4));
+    assertThat("Hello World", $$("letters and spaces", s -> s.matches("[\\w\\s]*")));
 ```
 
 Parallel Test Execution
