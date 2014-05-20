@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.github.marschall.junitlambda.LambdaAssert.$;
+import static com.github.marschall.junitlambda.LambdaAssert.$$;
 import static com.github.marschall.junitlambda.LambdaAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -48,7 +48,7 @@ public class ParallelTestingTest {
     @FirstTest
     public void before() {
         LOG.trace("Running first test");
-        assertThat(testsRun, $("Set empty", s -> s.size() == 0));
+        assertThat(testsRun, $$("Set empty", s -> s.size() == 0));
         LOG.trace("Finished first test");
     }
 
@@ -75,7 +75,7 @@ public class ParallelTestingTest {
     @FinalTest
     public void after() {
         LOG.trace("Running final test");
-        assertThat(testsRun, $("4 tests run", s -> s.size() == 4));
+        assertThat(testsRun, $$("4 tests run", s -> s.size() == 4));
         LOG.trace("Finished final test");
     }
 

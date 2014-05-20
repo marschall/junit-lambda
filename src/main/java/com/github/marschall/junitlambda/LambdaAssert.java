@@ -250,7 +250,7 @@ public final class LambdaAssert {
      * @param input     the value with which the predicate shall be tested
      * @param predicate the predicate to test upon the given input value
      * @param <T>       the static type accepted by the predicate
-     * @see com.github.marschall.junitlambda.LambdaAssert#$(String, java.util.function.Predicate)
+     * @see com.github.marschall.junitlambda.LambdaAssert#$$(String, java.util.function.Predicate)
      */
     public static <T> void assertThat(String msg, T input, Predicate<T> predicate) {
         if (!predicate.test(input)) {
@@ -288,7 +288,7 @@ public final class LambdaAssert {
      * @param input     the value with which the predicate shall be tested
      * @param predicate the predicate to test upon the given input value
      * @param <T>       the static type accepted by the predicate
-     * @see com.github.marschall.junitlambda.LambdaAssert#$(String, java.util.function.Predicate)
+     * @see com.github.marschall.junitlambda.LambdaAssert#$$(String, java.util.function.Predicate)
      */
     public static <T> void assertThat(T input, Predicate<T> predicate) {
         assertThat(null, input, predicate);
@@ -306,7 +306,7 @@ public final class LambdaAssert {
      * @return a self describing named predicate
      * @see com.github.marschall.junitlambda.LambdaAssert#assertThat(String, Object, java.util.function.Predicate)
      */
-    public static <T> Predicate<T> $(String description, Predicate<T> predicate) {
+    public static <T> Predicate<T> $$(String description, Predicate<T> predicate) {
         return new NamedPredicate<>(description, predicate);
     }
 

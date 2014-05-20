@@ -137,7 +137,7 @@ public class LambdaAssertTest {
     @Test
     public void testAssertThatPositive() {
         assertThat(names, n -> n.contains("Bob"));
-        assertThat("Hello World", $("letters and spaces", s -> s.matches("[\\w\\s]*")));
+        assertThat("Hello World", $$("letters and spaces", s -> s.matches("[\\w\\s]*")));
     }
 
     @Test(expected = AssertionError.class)
