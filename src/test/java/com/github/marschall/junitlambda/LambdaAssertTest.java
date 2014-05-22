@@ -1,14 +1,17 @@
 package com.github.marschall.junitlambda;
 
 import com.github.marschall.junitlambda.annotations.ParallelTesting;
+import com.github.marschall.junitlambda.runner.Java8JUnitTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import sun.jvm.hotspot.utilities.Assert;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
 import static com.github.marschall.junitlambda.LambdaAssert.*;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for the {@link com.github.marschall.junitlambda.LambdaAssert} class.
@@ -43,24 +46,97 @@ public class LambdaAssertTest {
         messages.add(new Messages.Message("This is bad", "I feel like it", "You are wrong. Just plain wrong.", Messages.Severity.ERROR));
     }
 
-    @Test(expected = AssertionError.class)
-    public void doesNotRaiseRuntime() {
-        assertRaises(() -> {
+    // Test methods for void functions
+
+    @Test
+    public void voidDoesNotRaiseRuntime() {
+        assertFaiure(() ->
+                assertVoidRaises(() -> {
+                }, RuntimeException.class));
+    }
+
+    @Test
+    public void voidDoesRaiseWrongRuntime() {
+        assertFaiure(() ->
+                assertVoidRaises(() -> {
+                    throw new NullPointerException();
+                }, IllegalArgumentException.class));
+    }
+
+    @Test
+    public void voidDoesRaiseCheckedInsteadOfRuntime() {
+        assertFaiure(() ->
+                assertVoidRaises(() -> {
+                    throw new IOException();
+                }, RuntimeException.class));
+    }
+
+    @Test
+    public void voidDoesRaiseRuntimeExact() {
+        assertVoidRaises(() -> {
+            throw new RuntimeException();
         }, RuntimeException.class);
     }
 
-    @Test(expected = AssertionError.class)
-    public void doesRaiseWrongRuntime() {
-        assertRaises(() -> {
-            throw new NullPointerException();
-        }, IllegalArgumentException.class);
+    @Test
+    public void voidDoesRaiseRuntimeSubclass() {
+        assertVoidRaises(() -> {
+            throw new IndexOutOfBoundsException();
+        }, RuntimeException.class);
     }
 
-    @Test(expected = AssertionError.class)
-    public void doesRaiseCheckedInsteadOfRuntime() {
-        assertRaises(() -> {
+    @Test
+    public void voidDoesRaiseCheckedExact() {
+        assertVoidRaises(() -> {
             throw new IOException();
-        }, RuntimeException.class);
+        }, IOException.class);
+    }
+
+    @Test
+    public void voidDoesRaiseCheckedSubclass() {
+        assertVoidRaises(() -> {
+            throw new FileNotFoundException();
+        }, IOException.class);
+    }
+
+    @Test
+    public void assertionErrorRaisedByVoid() {
+        assertVoidRaises(() -> {
+            throw new AssertionError();
+        }, AssertionError.class);
+    }
+
+    @Test
+    public void assertionErrorNotRaisedByVoid() {
+        assertFaiure(() ->
+                assertVoidRaises(() -> {
+                }, AssertionError.class));
+    }
+
+    // Test methods for functions with return values
+
+    @Test
+    public void doesNotRaiseRuntime() {
+        assertFaiure(() ->
+                assertRaises(() -> {
+                    return null;
+                }, RuntimeException.class));
+    }
+
+    @Test
+    public void doesRaiseWrongRuntime() {
+        assertFaiure(() ->
+                assertRaises(() -> {
+                    throw new NullPointerException();
+                }, IllegalArgumentException.class));
+    }
+
+    @Test
+    public void doesRaiseCheckedInsteadOfRuntime() {
+        assertFaiure(() ->
+                assertRaises(() -> {
+                    throw new IOException();
+                }, RuntimeException.class));
     }
 
     @Test
@@ -98,10 +174,25 @@ public class LambdaAssertTest {
         }, AssertionError.class);
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void assertionErrorNotRaised() {
-        assertRaises(() -> {
-        }, AssertionError.class);
+        assertFaiure(() ->
+                assertRaises(() -> {
+                    return null;
+                }, AssertionError.class));
+    }
+
+    // Test methods for iterables, collections and maps
+
+    @Test
+    public void testAssertForAllIterablePositive() {
+        assertForAll(messages, m -> m.getSeverity() != Messages.Severity.FATAL);
+    }
+
+    @Test
+    public void testAssertForAllIterableNegative() {
+        assertFaiure(() ->
+                assertForAll("Failed", messages, m -> m.getReason().equals("")));
     }
 
     @Test
@@ -109,9 +200,10 @@ public class LambdaAssertTest {
         assertForAll(names, n -> n.length() <= 5);
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testAssertForAllCollectionNegative() {
-        assertForAll("Failed", names, n -> n.toLowerCase().contains("a"));
+        assertFaiure(() ->
+                assertForAll("Failed", names, n -> n.toLowerCase().contains("a")));
     }
 
     @Test
@@ -119,20 +211,13 @@ public class LambdaAssertTest {
         assertForAll(ages, a -> a < 100);
     }
 
-    @Test(expected = AssertionError.class)
-    public void testAssertForAllMapNegative() {
-        assertForAll("Failed", ages, a -> a % 2 == 1);
-    }
-
     @Test
-    public void testAssertForAllIterablePositive() {
-        assertForAll(messages, m -> m.getSeverity() != Messages.Severity.FATAL);
+    public void testAssertForAllMapNegative() {
+        assertFaiure(() ->
+                assertForAll("Failed", ages, a -> a % 2 == 1));
     }
 
-    @Test(expected = AssertionError.class)
-    public void testAssertForAllIterableNegative() {
-        assertForAll("Failed", messages, m -> m.getReason().equals(""));
-    }
+    // Tests for single predicates
 
     @Test
     public void testAssertThatPositive() {
@@ -140,9 +225,21 @@ public class LambdaAssertTest {
         assertThat("Hello World", $$("letters and spaces", s -> s.matches("[\\w\\s]*")));
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testAssertThatNegative() {
-        assertThat(names, n -> n.contains("Greg"));
+        assertFaiure(() -> assertThat(names, n -> n.contains("Greg")));
+    }
+
+    // Tests for assertFailure
+
+    @Test
+    public void testAssertFailurePositive() {
+        assertFaiure(() -> assertTrue(false));
+    }
+
+    @Test(expected = AssertionError.class)
+    public void testAssertFailureNegative() {
+        assertFaiure(() -> {});
     }
 }
 

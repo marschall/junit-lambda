@@ -1,4 +1,4 @@
-package com.github.marschall.junitlambda;
+package com.github.marschall.junitlambda.runner;
 
 import com.github.marschall.junitlambda.annotations.FinalTest;
 import com.github.marschall.junitlambda.annotations.FirstTest;
@@ -69,6 +69,10 @@ public class Java8JUnitTestRunner extends BlockJUnit4ClassRunner {
         addTestAnnotation(FinalTest.class);
     }
 
+    //
+    // Test running
+    //
+
     @Override
     protected Statement childrenInvoker(RunNotifier notifier) {
         return new Statement() {
@@ -129,6 +133,22 @@ public class Java8JUnitTestRunner extends BlockJUnit4ClassRunner {
     }
 
     /**
+     * Run a given test.
+     *
+     * @param testClassName the name of the class our test is implemented in
+     * @param test the actual test method to be run
+     * @param notifier the RunNotifier which will react to the starting and ending of a test run
+     */
+    private void runTest(String testClassName, FrameworkMethod test, RunNotifier notifier) {
+        LOG.trace("Running test {}#{}", testClassName, test.getName());
+        scheduler.schedule(() -> Java8JUnitTestRunner.this.runChild(test, notifier));
+    }
+
+    //
+    // Test setup
+    //
+
+    /**
      * Set the first test of this class to be run.
      *
      * @param firstTest the first test to be run
@@ -144,18 +164,6 @@ public class Java8JUnitTestRunner extends BlockJUnit4ClassRunner {
      */
     private void setFinalTest(FrameworkMethod finalTest) {
         this.finalTest = finalTest;
-    }
-
-    /**
-     * Run a given test.
-     *
-     * @param testClassName the name of the class our test is implemented in
-     * @param test the actual test method to be run
-     * @param notifier the RunNotifier which will react to the starting and ending of a test run
-     */
-    private void runTest(String testClassName, FrameworkMethod test, RunNotifier notifier) {
-        LOG.trace("Running test {}#{}", testClassName, test.getName());
-        scheduler.schedule(() -> Java8JUnitTestRunner.this.runChild(test, notifier));
     }
 
     /**
@@ -204,6 +212,19 @@ public class Java8JUnitTestRunner extends BlockJUnit4ClassRunner {
             return super.computeTestMethods();
         }
     }
+
+    //
+    // Parameterizing tests
+    //
+
+    @Override
+    protected void collectInitializationErrors(List<Throwable> errors) {
+        // do nothing
+    }
+
+    //
+    // Other stuff
+    //
 
     @Override
     public void sort(Sorter sorter) {

@@ -8,22 +8,33 @@ Assertions
 Simple assertions can be made like such:
 
 ```java
-    assertRaises(() -> anObject.aMethod(anArgument), IllegalArgumentException.class);
+    assertVoidRaises(() -> anObject.aMethod(anArgument), IllegalArgumentException.class);
+    assertRaises(() -> { return (String) Integer.valueOf(5); }, ClassCastException.class);
     assertForAll(Arrays.asList(1, 2, 3), i -> i < 4);
     assertForAll(anyMapWithNumbersAsValues, n -> n >= 0);
     assertThat("Hello World", s -> s.matches("[\\w\\s]*"));
 ```
 
-To get more informative descriptions of failed lambda methods you may use the `$$(String description, Predicate<T> predicate)` factory method:
+To get more informative descriptions of failed lambda methods you may use the 
+`$$(String description, Predicate<T> predicate)` factory method:
 
 ```java
     assertForAll(Arrays.asList(1, 2, 3), $$("smaller than 4", i -> i < 4));
     assertThat("Hello World", $$("letters and spaces", s -> s.matches("[\\w\\s]*")));
 ```
 
+To improve readability in some situations, rather than the `@Test(expected = AssertionError.class)` annotation for 
+tests which are expected to fail `assertFailure(Block block)` can be used:
+
+```java
+    assertFailure(() -> assertTrue(false));
+    assertFailure("Why did this not fail? Oh, right.", () -> assertTrue(true));
+```
+
 Parallel Test Execution
 -----------------------
-JUnit λ comes with a JUnit Runner which will execute your tests in parallel, thereby improving test execution speed in many cases.
+JUnit λ comes with a JUnit Runner which will execute your tests in parallel, thereby improving test execution speed in 
+many cases.
 
 ```java
     @RunWith(ParallelJUnitTestRunner.class)
@@ -37,7 +48,8 @@ This can be used with any JUnit tests, independent of whether they use lambda ex
 Maven Dependency
 ----------------
 
-Currently this version is not available on Maven Central. A previous version can received by the following dependency entry:
+Currently this version is not available on Maven Central. A previous version can received by the following dependency 
+entry:
 
 ```xml
 <dependency>

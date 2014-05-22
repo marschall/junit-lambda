@@ -19,6 +19,8 @@
 
         <slf4j.version>1.7.7</slf4j.version>
         <log4j.version>1.2.17</log4j.version>
+        <junitparams.version>1.0.2</junitparams.version>
+        <apache-commons.version>3.3.2</apache-commons.version>
     </properties>
 
     <developers>
@@ -80,8 +82,14 @@
         <dependency>
             <groupId>pl.pragmatists</groupId>
             <artifactId>JUnitParams</artifactId>
-            <version>1.0.2</version>
+            <version>${junitparams.version}</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${apache-commons.version}</version>
         </dependency>
     </dependencies>
 
