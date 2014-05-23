@@ -1,8 +1,10 @@
 package com.github.marschall.junitlambda.runner;
 
-import com.github.marschall.junitlambda.annotations.FinalTest;
 import com.github.marschall.junitlambda.annotations.FirstTest;
+import com.github.marschall.junitlambda.annotations.LastTest;
 import com.github.marschall.junitlambda.annotations.ParallelTesting;
+import junitparams.internal.ParameterisedTestClassRunner;
+import junitparams.internal.TestMethod;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
@@ -18,25 +20,35 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * A JUnit Runner that can execute test methods in parallel, thus improving execution times in most cases.
+ * A JUnit Runner that can execute test methods in parallel, thus improving execution times in most cases.<p/>
+ * It is also built with the {@link junitparams.JUnitParamsRunner} in mind, thereby enabeling parameterised testing.
  *
  * @author Alasdair Collinson
  * @since 0.2.0
+ * @see junitparams.JUnitParamsRunner
  */
 public class Java8JUnitTestRunner extends BlockJUnit4ClassRunner {
 
     private static final Logger LOG = LoggerFactory.getLogger(Java8JUnitTestRunner.class);
 
-    private List<FrameworkMethod> childrenInstance = null;
+    /**
+     * TODO AC: JavaDoc
+     */
     private Sorter sorter = Sorter.NULL;
-
-    private List<Class<? extends Annotation>> testAnnotations = new ArrayList<>();
-    private FrameworkMethod firstTest = null, finalTest = null;
-
+    /**
+     * TODO AC: JavaDoc
+     */
+    private ParameterisedTestClassRunner parameterisedRunner;
+    /**
+     * TODO AC: JavaDoc
+     */
     private RunnerScheduler scheduler = new RunnerScheduler() {
         public void schedule(Runnable childStatement) {
             childStatement.run();
@@ -48,6 +60,23 @@ public class Java8JUnitTestRunner extends BlockJUnit4ClassRunner {
     };
 
     /**
+     * TODO AC: JavaDoc
+     */
+    private List<FrameworkMethod> childrenInstance;
+    /**
+     * TODO AC: JavaDoc
+     */
+    private List<Class<? extends Annotation>> testAnnotations = new ArrayList<>();
+    /**
+     * TODO AC: JavaDoc
+     */
+    private FrameworkMethod firstTest, finalTest;
+    /**
+     * TODO AC: JavaDoc
+     */
+    private Description description;
+
+    /**
      * Constructor.
      *
      * @param testClass The class from which tests are executed
@@ -55,18 +84,33 @@ public class Java8JUnitTestRunner extends BlockJUnit4ClassRunner {
      */
     public Java8JUnitTestRunner(Class<?> testClass) throws InitializationError {
         super(testClass);
+
         setScheduler(scheduler);
-        // A maximum of one FirstTest and one FinalTest annotation are allowed
-        if(getTestClass().getAnnotatedMethods(FirstTest.class).size() > 1) {
+        // A maximum of one FirstTest and one LastTest annotation are allowed
+        if (getTestClass().getAnnotatedMethods(FirstTest.class).size() > 1) {
             throw new InitializationError("There is more than one test method annotated with @FirstTest");
         }
-        if(getTestClass().getAnnotatedMethods(FinalTest.class).size() > 1) {
-            throw new InitializationError("There is more than one test method annotated with @FinalTest");
+        if (getTestClass().getAnnotatedMethods(LastTest.class).size() > 1) {
+            throw new InitializationError("There is more than one test method annotated with @LastTest");
         }
         // Add the annotations which should be considered test annotations
         addTestAnnotation(FirstTest.class);
         addTestAnnotation(Test.class);
-        addTestAnnotation(FinalTest.class);
+        addTestAnnotation(LastTest.class);
+
+        // TMP
+        parameterisedRunner = new ParameterisedJava8TestRunner(getTestClass(), testAnnotations) {
+            @Override
+            protected void onFirstTest(TestMethod testMethod) {
+                setFirstTest(testMethod.frameworkMethod());
+            }
+
+            @Override
+            protected void onLastTest(TestMethod testMethod) {
+                setLastTest(testMethod.frameworkMethod());
+            }
+        };
+        // TMP
     }
 
     //
@@ -112,19 +156,19 @@ public class Java8JUnitTestRunner extends BlockJUnit4ClassRunner {
         final String testClassName = getTestClass().getJavaClass().getName();
 
         // Run the tests
-        if(firstTest != null) {
+        if (firstTest != null) {
             LOG.trace("Running first test");
             runTest(testClassName, firstTest, notifier);
         }
         stream.forEach(each -> {
-            if (each.getAnnotation(FinalTest.class) != null) {
-                setFinalTest(each);
-            } else if(each.getAnnotation(FirstTest.class) == null) { // Skip the first test as we've already run it
+            if (each.getAnnotation(LastTest.class) != null) {
+                setLastTest(each);
+            } else if (each.getAnnotation(FirstTest.class) == null) { // Skip the first test as we've already run it
                 runTest(testClassName, each, notifier);
             }
         });
         // Run the final test
-        if(finalTest != null) {
+        if (finalTest != null) {
             LOG.trace("Running final test");
             runTest(testClassName, finalTest, notifier);
             finalTest = null;
@@ -136,8 +180,8 @@ public class Java8JUnitTestRunner extends BlockJUnit4ClassRunner {
      * Run a given test.
      *
      * @param testClassName the name of the class our test is implemented in
-     * @param test the actual test method to be run
-     * @param notifier the RunNotifier which will react to the starting and ending of a test run
+     * @param test          the actual test method to be run
+     * @param notifier      the RunNotifier which will react to the starting and ending of a test run
      */
     private void runTest(String testClassName, FrameworkMethod test, RunNotifier notifier) {
         LOG.trace("Running test {}#{}", testClassName, test.getName());
@@ -153,7 +197,7 @@ public class Java8JUnitTestRunner extends BlockJUnit4ClassRunner {
      *
      * @param firstTest the first test to be run
      */
-    private void setFirstTest(FrameworkMethod firstTest) {
+    void setFirstTest(FrameworkMethod firstTest) {
         this.firstTest = firstTest;
     }
 
@@ -162,7 +206,7 @@ public class Java8JUnitTestRunner extends BlockJUnit4ClassRunner {
      *
      * @param finalTest the final test to be run
      */
-    private void setFinalTest(FrameworkMethod finalTest) {
+    void setLastTest(FrameworkMethod finalTest) {
         this.finalTest = finalTest;
     }
 
@@ -199,15 +243,7 @@ public class Java8JUnitTestRunner extends BlockJUnit4ClassRunner {
     @Override
     protected List<FrameworkMethod> computeTestMethods() {
         if (testAnnotations != null) {
-            List<FrameworkMethod> result = new ArrayList<>();
-            for (Class<? extends Annotation> annotation : testAnnotations) {
-                List<FrameworkMethod> annotatedTests = getTestClass().getAnnotatedMethods(annotation);
-                if(annotation == FirstTest.class && annotatedTests.size() > 0) {
-                    setFirstTest(annotatedTests.get(0));
-                }
-                result.addAll(annotatedTests);
-            }
-            return result;
+            return parameterisedRunner.computeFrameworkMethods();
         } else {
             return super.computeTestMethods();
         }
@@ -216,6 +252,74 @@ public class Java8JUnitTestRunner extends BlockJUnit4ClassRunner {
     //
     // Parameterizing tests
     //
+
+    /**
+     * TODO AC: JavaDoc
+     *
+     * @param method
+     * @param notifier
+     * @see junitparams.JUnitParamsRunner#run(org.junit.runner.notification.RunNotifier)
+     */
+    @Override
+    protected void runChild(FrameworkMethod method, RunNotifier notifier) {
+        if (handleIgnored(method, notifier))
+            return;
+
+        TestMethod testMethod = parameterisedRunner.testMethodFor(method);
+        if (parameterisedRunner.shouldRun(testMethod))
+            parameterisedRunner.runParameterisedTest(testMethod, methodBlock(method), notifier);
+        else
+            super.runChild(method, notifier);
+    }
+
+    /**
+     * TODO AC: JavaDoc
+     *
+     * @param method
+     * @param notifier
+     * @return
+     * @see junitparams.JUnitParamsRunner#handleIgnored(org.junit.runners.model.FrameworkMethod, org.junit.runner.notification.RunNotifier)
+     */
+    private boolean handleIgnored(FrameworkMethod method, RunNotifier notifier) {
+        TestMethod testMethod = parameterisedRunner.testMethodFor(method);
+        if (testMethod.isIgnored())
+            notifier.fireTestIgnored(describeMethod(method));
+
+        return testMethod.isIgnored();
+    }
+
+    /**
+     * TODO TMP
+     *
+     * @param method
+     * @return
+     * @see junitparams.JUnitParamsRunner#describeMethod(org.junit.runners.model.FrameworkMethod)
+     */
+    protected Description describeMethod(FrameworkMethod method) {
+        Description child = parameterisedRunner.describeParameterisedMethod(method);
+
+        if (child == null)
+            child = describeChild(method);
+
+        return child;
+    }
+
+    /**
+     * TODO TMP
+     *
+     * @param method
+     * @param test
+     * @return
+     * @see junitparams.JUnitParamsRunner#methodInvoker(org.junit.runners.model.FrameworkMethod, Object)
+     */
+    @Override
+    protected Statement methodInvoker(FrameworkMethod method, Object test) {
+        Statement methodInvoker = parameterisedRunner.parameterisedMethodInvoker(method, test);
+        if (methodInvoker == null)
+            methodInvoker = super.methodInvoker(method, test);
+
+        return methodInvoker;
+    }
 
     @Override
     protected void collectInitializationErrors(List<Throwable> errors) {
@@ -233,13 +337,22 @@ public class Java8JUnitTestRunner extends BlockJUnit4ClassRunner {
         Collections.sort(getChildrenInstance(), (o1, o2) -> this.sorter.compare(describeChild(o1), describeChild(o2)));
     }
 
+    /**
+     * TODO AC: JavaDoc
+     *
+     * @return
+     * @see junitparams.JUnitParamsRunner#getDescription()
+     */
     @Override
     public Description getDescription() {
-        Description description = Description.createSuiteDescription(getName(),
-                getRunnerAnnotations());
-        for (FrameworkMethod child : getChildrenInstance()) {
-            description.addChild(describeChild(child));
+        if (description == null) {
+            description = Description.createSuiteDescription(getName(), getRunnerAnnotations());
+            List<FrameworkMethod> resultMethods = parameterisedRunner.returnListOfMethods();
+
+            for (FrameworkMethod method : resultMethods)
+                description.addChild(describeMethod(method));
         }
+
         return description;
     }
 

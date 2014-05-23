@@ -1,8 +1,9 @@
 package com.github.marschall.junitlambda;
 
-import com.github.marschall.junitlambda.annotations.FinalTest;
+import com.github.marschall.junitlambda.annotations.LastTest;
 import com.github.marschall.junitlambda.annotations.FirstTest;
 import com.github.marschall.junitlambda.annotations.ParallelTesting;
+import com.github.marschall.junitlambda.runner.Java8JUnitTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -72,7 +73,7 @@ public class ParallelTestingTest {
         test(4);
     }
 
-    @FinalTest
+    @LastTest
     public void after() {
         LOG.trace("Running final test");
         assertThat(testsRun, $$("4 tests run", s -> s.size() == 4));

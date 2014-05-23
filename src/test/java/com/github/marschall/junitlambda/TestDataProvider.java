@@ -9,12 +9,12 @@ import static junitparams.JUnitParamsRunner.$;
  */
 public class TestDataProvider {
 
-    public static Object[] provideUpperCaseStrings() {
+    /*public static Object[] provideUpperCaseStrings() {
         return $(
                 $("ONE", "NONE"),
                 $("TWO", "TWOFLOUR")
         );
-    }
+    }*/
 
     public static Object[] provideLowerCaseStrings() {
         return $(

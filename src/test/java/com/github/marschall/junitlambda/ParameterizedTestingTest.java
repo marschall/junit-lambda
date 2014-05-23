@@ -1,5 +1,9 @@
 package com.github.marschall.junitlambda;
 
+import com.github.marschall.junitlambda.annotations.LastTest;
+import com.github.marschall.junitlambda.annotations.FirstTest;
+import com.github.marschall.junitlambda.annotations.ParallelTesting;
+import com.github.marschall.junitlambda.runner.Java8JUnitTestRunner;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.commons.lang3.tuple.Pair;
@@ -12,8 +16,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.chrono.ChronoZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -28,8 +30,16 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Alasdair Collinson
  */
-@RunWith(JUnitParamsRunner.class)
+//@RunWith(JUnitParamsRunner.class)
+@RunWith(Java8JUnitTestRunner.class)
+@ParallelTesting(parallel = false)
 public class ParameterizedTestingTest {
+
+    @Ignore
+    @FirstTest
+    public void firstTest() {
+        assertTrue(true);
+    }
 
     @Test
     @Parameters({"1, Hello, true", "2, Hi, false"})
@@ -83,7 +93,14 @@ public class ParameterizedTestingTest {
                 $$("is the boolean stating whether the number is even or not correct", n -> (n % 2 == 0) == even));
     }
 
+    @SuppressWarnings("unused")
     private Object[] parametersForFourthTestWithParameters() {
         return IntStream.range(1, 10).mapToObj(i -> $(i, i % 2 == 0)).toArray();
     }
+
+    @LastTest
+    public void lastTest() {
+        assertTrue(true);
+    }
+
 }
