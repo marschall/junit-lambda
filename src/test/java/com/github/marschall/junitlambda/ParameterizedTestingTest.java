@@ -3,6 +3,7 @@ package com.github.marschall.junitlambda;
 import com.github.marschall.junitlambda.annotations.LastTest;
 import com.github.marschall.junitlambda.annotations.FirstTest;
 import com.github.marschall.junitlambda.annotations.ParallelTesting;
+import com.github.marschall.junitlambda.annotations.ParameterRecord;
 import com.github.marschall.junitlambda.runner.Java8JUnitTestRunner;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.chrono.ChronoZonedDateTime;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -35,6 +37,7 @@ import static org.junit.Assert.assertTrue;
 @ParallelTesting(parallel = false)
 public class ParameterizedTestingTest {
 
+    /*
     @Ignore
     @FirstTest
     public void firstTest() {
@@ -96,6 +99,16 @@ public class ParameterizedTestingTest {
     @SuppressWarnings("unused")
     private Object[] parametersForFourthTestWithParameters() {
         return IntStream.range(1, 10).mapToObj(i -> $(i, i % 2 == 0)).toArray();
+    }
+    */
+
+    @Test
+    @ParameterRecord({"eins", "2", "3.0"})
+    @ParameterRecord({"one", "2", "3.0"})
+    public void fithTestWithParameters(String one, int two, Double three) {
+        assertThat(one, input -> Arrays.asList("eins", "one").contains(input));
+        assertThat(() -> two == 2);
+        assertThat(() -> three == 3.0);
     }
 
     @LastTest

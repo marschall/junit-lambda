@@ -1,5 +1,6 @@
 package com.github.marschall.junitlambda.internal;
 
+import com.github.marschall.junitlambda.annotations.ParameterRecord;
 import com.github.marschall.junitlambda.annotations.ParameterRecords;
 import junitparams.FileParameters;
 import junitparams.Parameters;
@@ -52,30 +53,48 @@ public class Java8TestMethod extends TestMethod {
         return annotatedMethods.stream().map(frameworkMethod -> new Java8TestMethod(frameworkMethod, testClass)).collect(Collectors.toList());
     }
 
+    private static <T> List<T> toList(T... array) {
+        return Stream.of(array).collect(Collectors.toList());
+    }
+
     public Object[] parametersSets() {
         if (params != null)
             return params.toArray();
 
-        if (parametersAnnotation != null) {
+        if (parametersAnnotation != null || parameterRecordsAnnotation != null) {
             // get the parameters from the {@link Parameters#value()} element
-            params = toList(parametersAnnotation.value());
+            params = paramsFromAnnotation();
 
             // add the parameters from source files
             params.addAll(paramsFromSource());
             // and now add the parameters from "parametersFor"-methods
             params.addAll(paramsFromMethod(testClass));
-            if(params.isEmpty()) {
+            if (params.isEmpty()) {
                 throw new RuntimeException("Could not find parameters for " + frameworkMethod() + " so no params were used.");
             }
-        } else if (fileParametersAnnotation != null) {
-            params = paramsFromFile();
         }
+        if (fileParametersAnnotation != null) {
+            params.addAll(paramsFromFile());
+        }
+
 
         if (params != null) {
             return params.toArray();
         } else {
             return new Object[]{};
         }
+    }
+
+    private List<Object> paramsFromAnnotation() {
+        List<Object> result = toList();
+        if(parametersAnnotation != null) {
+            result.addAll(toList(parametersAnnotation.value()));
+        }
+        if(parameterRecordsAnnotation != null) {
+            // The values here are supposed to be added as one value rather than as separate ones.
+            result.addAll(Arrays.stream(parameterRecordsAnnotation.value()).map(annotation -> annotation.value()).collect(Collectors.toList()));
+        }
+        return result;
     }
 
     private List<Object> paramsFromFile() {
@@ -106,40 +125,84 @@ public class Java8TestMethod extends TestMethod {
         throw new IllegalArgumentException("Unknown file access protocol. Only 'file' and 'classpath' are supported!");
     }
 
+    /**
+     * TODO AC: JavaDoc
+     *
+     * @return
+     */
     private List<Object> paramsFromSource() {
         // if the source class is undefined
-        if (parametersAnnotation.source().isAssignableFrom(NullType.class))
-            return toList();
-
-        Class<?> sourceClass = parametersAnnotation.source();
-        String method = parametersAnnotation.method();
-
-        if (method.isEmpty()) {
-            return fillResultWithAllParamProviderMethods(sourceClass);
+        boolean noSourceGiven = false;
+        if(parametersAnnotation == null && parameterRecordsAnnotation == null) {
+            noSourceGiven = true;
+        } else if(parametersAnnotation != null && parametersAnnotation.source().isAssignableFrom(NullType.class)) {
+            noSourceGiven = true;
         } else {
-            return paramsFromMethod(sourceClass);
+            boolean nullType = true;
+            for(ParameterRecord parameterRecord : parameterRecordsAnnotation.value()) {
+                if(!parameterRecord.source().isAssignableFrom(NullType.class)) {
+                    nullType = false;
+                    break;
+                }
+            }
+            if(nullType) {
+                noSourceGiven = true;
+            }
         }
+        if(noSourceGiven) {
+            return toList();
+        }
+
+        List<Class<?>> sourceClasses = new ArrayList<>();
+        List<String> methods = new ArrayList<>();
+
+        if (parametersAnnotation != null) {
+            sourceClasses.add(parametersAnnotation.source());
+            methods.add(parametersAnnotation.method());
+        }
+        if (parameterRecordsAnnotation != null) {
+            Stream<ParameterRecord> parameterRecordStream = Arrays.asList(parameterRecordsAnnotation.value()).stream();
+            sourceClasses.addAll(parameterRecordStream.map(ParameterRecord::source).collect(Collectors.toList()));
+            methods.addAll(parameterRecordStream.map(ParameterRecord::method).collect(Collectors.toList()));
+        }
+
+        List<Object> params = toList();
+        for (Class<?> sourceClass : sourceClasses) {
+            params.addAll(fillResultWithAllParamProviderMethods(sourceClass));
+            params.addAll(paramsFromMethod(sourceClass));
+        }
+        return params;
     }
 
     private List<Object> paramsFromMethod(Class<?> classWithMethod) {
-        String methodAnnotation = parametersAnnotation.method();
+        List<String> methodAnnotations = toList();
+        if(parametersAnnotation != null) {
+            methodAnnotations.addAll(toList(parametersAnnotation.method()));
+        }
+        /*if(parameterRecordsAnnotation != null) {
+            // TODO AC: Explain
+            methodAnnotations.addAll(Arrays.asList(parameterRecordsAnnotation.value()).stream().map(ParameterRecord::method).collect(Collectors.toList()));
+        }*/
 
-        if (methodAnnotation.isEmpty()) {
-            return invokeMethodWithParams(defaultMethodName(), classWithMethod);
+        List<Object> result = toList();
+        for(String methodAnnotation : methodAnnotations) {
+            if (methodAnnotation.isEmpty()) {
+                result.addAll(invokeMethodWithParams(defaultMethodName(), classWithMethod));
+                break;
+            }
+
+            Stream<List<Object>> invokedMethods = Stream.of(methodAnnotation.split(",")).
+                    map(methodName -> invokeMethodWithParams(methodName.trim(), classWithMethod));
+            Optional<List<Object>> combinedMethods = invokedMethods.reduce((list1, list2) -> {
+                list1.addAll(list2);
+                return list1;
+            });
+            if (combinedMethods.isPresent()) {
+                result.addAll(combinedMethods.get());
+            }
         }
 
-        Stream<List<Object>> invokedMethods = Stream.of(methodAnnotation.split(",")).
-                map(methodName -> invokeMethodWithParams(methodName.trim(), classWithMethod));
-        Optional<List<Object>> combinedMethods = invokedMethods.reduce((list1, list2) -> {
-            list1.addAll(list2);
-            return list1;
-        });
-
-        if (combinedMethods.isPresent()) {
-            return combinedMethods.get();
-        } else {
-            return new ArrayList<>();
-        }
+        return result;
     }
 
     private String defaultMethodName() {
@@ -167,14 +230,12 @@ public class Java8TestMethod extends TestMethod {
             }
             declaringClass = declaringClass.getSuperclass();
         }
-        //if (provideMethod == null)
-        //    throw new RuntimeException("Could not find method: " + methodName + " so no params were used.");
         return provideMethod;
     }
 
     @SuppressWarnings("unchecked")
     private List<Object> invokeParamsProvidingMethod(Class<?> testClass, Method provideMethod) {
-        if(provideMethod == null) {
+        if (provideMethod == null) {
             return toList();
         }
         try {
@@ -266,107 +327,15 @@ public class Java8TestMethod extends TestMethod {
         return encapsulateParamsIntoArrayIfSingleParamsetPassed(toList((Object[]) providerMethod.invoke(null)));
     }
 
-    private static <T> List<T> toList(T... array) {
-        return Stream.of(array).collect(Collectors.toList());
+    @Override
+    public boolean isParameterised() {
+        return super.isParameterised()
+                || frameworkMethod().getMethod().isAnnotationPresent(ParameterRecords.class);
     }
 
-    /*@Override
-    public Object[] parametersSets() {
-        if (params != null)
-            return params.toArray();
 
-        // TODO AC: Explain
-        params = new ArrayList<>();
-        if (parametersAnnotation != null || parameterRecordsAnnotation != null) {
-            params.addAll(Arrays.asList(paramsFromValue()));
 
-            if (params.size() == 0)
-                params.addAll(Arrays.asList(paramsFromSource()));
-
-            if (params.size() == 0)
-                params.addAll(Arrays.asList(paramsFromMethod(Arrays.asList(testClass))));
-        } else if (fileParametersAnnotation != null) {
-            params.addAll(Arrays.asList(paramsFromFile()));
-        }
-
-        return params.toArray();
-    }
-
-    private List<Object> paramsFromValue() {
-        List<Object> result = new ArrayList<>();
-        if(parametersAnnotation != null) {
-            result.addAll(Arrays.asList(parametersAnnotation.value()));
-        }
-        if(parameterRecordsAnnotation != null) {
-            Optional<String[]> records = Arrays.asList(parameterRecordsAnnotation.value()).stream().map(ParameterRecord::value).reduce((v1, v2) -> {
-                List<String> reduced = new ArrayList<>();
-                reduced.addAll(Arrays.asList(v1));
-                reduced.addAll(Arrays.asList(v2));
-                return reduced.toArray(new String[reduced.size()]);
-            });
-            result.addAll(Arrays.asList(records.get()));
-        }
-        return result;
-    }
-
-    private List<Object> paramsFromSource() {
-        if (sourceClassUndefined())
-            return new ArrayList<>();
-
-        List<Class<?>> sourceClasses = new ArrayList<>();
-        List<String> methods = new ArrayList<>();
-        if (parametersAnnotation != null) {
-            sourceClasses.add(parametersAnnotation.source());
-            methods.add(parametersAnnotation.method());
-        }
-        if (parameterRecordsAnnotation != null) {
-            Stream<ParameterRecord> parameterRecordStream = Arrays.asList(parameterRecordsAnnotation.value()).stream();
-            sourceClasses.addAll(parameterRecordStream.map(ParameterRecord::source).collect(Collectors.toList()));
-            methods.addAll(parameterRecordStream.map(ParameterRecord::method).collect(Collectors.toList()));
-        }
-
-        if (methods.isEmpty())
-            return fillResultWithAllParamProviderMethods(sourceClasses);
-        else {
-            return paramsFromMethod(sourceClasses);
-        }
-    }
-
-    private List<Object> paramsFromMethod(List<Class<?>> classesWithMethod) {
-        List<String> methodAnnotations = new ArrayList<>();
-        methodAnnotations.add(parametersAnnotation.method());
-        methodAnnotations.addAll(Arrays.asList(parameterRecordsAnnotation.value()).stream().map(ParameterRecord::method).collect(Collectors.toList()));
-
-        if (methodAnnotations.isEmpty())
-            return invokeMethodWithParams(defaultMethodName(), classesWithMethod);
-
-        List<Object> result = new ArrayList<>();
-        for (String methodAnnotation : methodAnnotations) {
-            for (String methodName : methodAnnotation.split(",")) {
-                Collections.addAll(result, invokeMethodWithParams(methodName.trim(), classesWithMethod));
-            }
-        }
-
-        return result;
-    }
-
-    private String defaultMethodName() {
-        String methodName;
-        methodName = "parametersFor" + frameworkMethod().getName().substring(0, 1).toUpperCase()
-                + frameworkMethod().getName().substring(1);
-        return methodName;
-    }
-
-    private List<Object> invokeMethodWithParams(String methodName, List<Class<?>> testClasses) {
-        List<Method> provideMethods = findParamsProvidingMethodsInTestclassHierarchy(methodName, testClasses);
-
-        return invokeParamsProvidingMethod(testClasses, provideMethods);
-    }
-
-    private boolean sourceClassUndefined() {
-        return parametersAnnotation.source().isAssignableFrom(NullType.class);
-    }
-
+    /*
     private List<Object> fillResultWithAllParamProviderMethods(List<Class<?>> sourceClasses) {
         List<Object> result = new ArrayList<>();
         for (Class<?> sourceClass : sourceClasses) {

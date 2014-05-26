@@ -265,6 +265,29 @@ public final class LambdaAssert {
     }
 
     /**
+     * TODO AC: JavaDoc
+     *
+     * @param message
+     * @param callable
+     */
+    public static void assertThat(String message, Callable<Boolean> callable) throws AssertionError {
+        try {
+            assertTrue(message, callable.call());
+        } catch(Exception e) {
+            throw new AssertionError(message != null ? message : "Error in Test", e);
+        }
+    }
+
+    /**
+     * TODO AC: JavaDoc
+     *
+     * @param callable
+     */
+    public static void assertThat(Callable<Boolean> callable) throws AssertionError {
+        assertThat(null, callable);
+    }
+
+    /**
      * Runs a block which is expected to fail, throwing an {@link java.lang.AssertionError}. JUnit assertions do this
      * when they fail.
      *
