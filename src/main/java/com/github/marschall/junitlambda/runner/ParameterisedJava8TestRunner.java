@@ -41,14 +41,14 @@ public abstract class ParameterisedJava8TestRunner extends ParameterisedTestClas
         for (Class<? extends Annotation> annotation : testAnnotations) {
             testMethodsList.addAll(Java8TestMethod.listFrom(testClass.getAnnotatedMethods(annotation), testClass));
         }
-        /*for(TestMethod testMethod : testMethodsList) {
+        for(TestMethod testMethod : testMethodsList) {
             if(testMethod.frameworkMethod().getAnnotation(FirstTest.class) != null) {
                 onFirstTest(testMethod);
             }
             if(testMethod.frameworkMethod().getAnnotation(LastTest.class) != null) {
                 onLastTest(testMethod);
             }
-        }*/
+        }
     }
 
     /**

@@ -135,7 +135,7 @@ public class Java8JUnitTestRunner extends BlockJUnit4ClassRunner {
      */
     private void runChildren(final RunNotifier notifier) throws InitializationError {
         // Determine whether the tests can be run in parallel
-        boolean runInParallel = true;
+        boolean runInParallel = false;
         ParallelTesting[] parallelTestings = getTestClass().getJavaClass().getAnnotationsByType(ParallelTesting.class);
         if (parallelTestings.length > 0) {
             runInParallel = parallelTestings[0].parallel();

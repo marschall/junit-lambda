@@ -7,14 +7,14 @@ import static junitparams.JUnitParamsRunner.$;
  *
  * @author Alasdair Collinson
  */
-public class TestDataProvider {
+public final class ThirdTestDataProvider {
 
-    /*public static Object[] provideUpperCaseStrings() {
+    public static Object[] provideUpperCaseStrings() {
         return $(
                 $("ONE", "NONE"),
                 $("TWO", "TWOFLOUR")
         );
-    }*/
+    }
 
     public static Object[] provideLowerCaseStrings() {
         return $(

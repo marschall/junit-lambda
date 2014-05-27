@@ -162,7 +162,7 @@ public final class LambdaAssert {
      * @param predicate the predicate to be checked
      * @param <T>       the type of elements in the iterable
      */
-    public static <T> void assertForAll(String msg, Iterable<T> iterable, Predicate<T> predicate) {
+    public static <T> void assertForEach(String msg, Iterable<T> iterable, Predicate<T> predicate) {
         iterable.forEach(item -> assertTrue(String.format(PATTERN, msg, iterable.toString()), predicate.test(item)));
     }
 
@@ -174,8 +174,8 @@ public final class LambdaAssert {
      * @param predicate the predicate to be checked
      * @param <T>       the type of elements in the iterable
      */
-    public static <T> void assertForAll(Iterable<T> iterable, Predicate<T> predicate) {
-        assertForAll("", iterable, predicate);
+    public static <T> void assertForEach(Iterable<T> iterable, Predicate<T> predicate) {
+        assertForEach("", iterable, predicate);
     }
 
     /**
@@ -187,7 +187,7 @@ public final class LambdaAssert {
      * @param predicate the predicate to be checked
      * @param <T>       the type of elements in the map
      */
-    public static <T> void assertForAll(String msg, Map<?, T> map, Predicate<T> predicate) {
+    public static <T> void assertForEach(String msg, Map<?, T> map, Predicate<T> predicate) {
         map.forEach((k, e) -> assertTrue(String.format(PATTERN, msg, map.toString()), predicate.test(e)));
     }
 
@@ -198,8 +198,8 @@ public final class LambdaAssert {
      * @param predicate the predicate to be checked
      * @param <T>       the type of elements in the map
      */
-    public static <T> void assertForAll(Map<?, T> map, Predicate<T> predicate) {
-        assertForAll("", map, predicate);
+    public static <T> void assertForEach(Map<?, T> map, Predicate<T> predicate) {
+        assertForEach("", map, predicate);
     }
 
     /**
@@ -208,12 +208,12 @@ public final class LambdaAssert {
      * the reason and information about the matcher and failing value. Example:
      * <p>
      * <pre>
-     *   assertThat(&quot;Why isn't zero the same as one?&quot;, 0, $(&quot;equals one&quot;, n -> n == 1)); // fails:
+     *   assertThat(&quot;Why isn't zero the same as one?&quot;, 0, $$(&quot;equals one&quot;, n -> n == 1)); // fails:
      *     // failure message:
      *     // Why isn't zero the same as one?
      *     // Input: 0
      *     // Predicate: equals one
-     *   assertThat(&quot;One equals one.&quot;, 1, $(&quot;equals one&quot;, n -> n == 1)); // passes
+     *   assertThat(&quot;One equals one.&quot;, 1, $$(&quot;equals one&quot;, n -> n == 1)); // passes
      * </pre>
      *
      * @param msg       the identifying message for the {@link AssertionError} (<code>null</code> okay)
@@ -221,6 +221,7 @@ public final class LambdaAssert {
      * @param predicate the predicate to test upon the given input value
      * @param <T>       the static type accepted by the predicate
      * @see com.github.marschall.junitlambda.LambdaAssert#$$(String, java.util.function.Predicate)
+     * @see org.junit.Assert#assertThat(String, Object, org.hamcrest.Matcher)
      */
     public static <T> void assertThat(String msg, T input, Predicate<T> predicate) {
         if (!predicate.test(input)) {
@@ -247,41 +248,68 @@ public final class LambdaAssert {
      * the reason and information about the matcher and failing value. Example:
      * <p>
      * <pre>
-     *   assertThat(&quot;Why isn't zero the same as one?&quot;, 0, $(&quot;equals one&quot;, n -> n == 1)); // fails:
+     *   assertThat(&quot;Why isn't zero the same as one?&quot;, 0, $$(&quot;equals one&quot;, n -> n == 1)); // fails:
      *     // failure message:
      *     // Why isn't zero the same as one?
      *     // Input: 0
      *     // Predicate: equals one
-     *   assertThat(&quot;One equals one.&quot;, 1, $(&quot;equals one&quot;, n -> n == 1)); // passes
+     *   assertThat(&quot;One equals one.&quot;, 1, $$(&quot;equals one&quot;, n -> n == 1)); // passes
      * </pre>
      *
      * @param input     the value with which the predicate shall be tested
      * @param predicate the predicate to test upon the given input value
      * @param <T>       the static type accepted by the predicate
      * @see com.github.marschall.junitlambda.LambdaAssert#$$(String, java.util.function.Predicate)
+     * @see org.junit.Assert#assertThat(Object, org.hamcrest.Matcher)
      */
     public static <T> void assertThat(T input, Predicate<T> predicate) {
         assertThat(null, input, predicate);
     }
 
     /**
-     * TODO AC: JavaDoc
+     * Asserts that <code>callable</code> is satisfied. If not, an {@link AssertionError}
+     * is thrown with the reason and information about the matcher and failing value.
+     * Example:
+     * <p>
+     * <pre>
+     *   assertThat(&quot;Why isn't zero the same as one?&quot;, $$(&quot;equals one&quot;, () -> 0 == 1)); // fails:
+     *     // failure message:
+     *     // Why isn't zero the same as one?
+     *     // Predicate: equals one
+     *   assertThat(&quot;One equals one.&quot;, $$(&quot;equals one&quot;, () -> 1 == 1)); // passes
+     * </pre>
      *
-     * @param message
-     * @param callable
+     * @param msg the identifying message for the {@link AssertionError} (<code>null</code> okay)
+     * @param callable the {@link java.util.concurrent.Callable} to be called. Must be of the generic type
+     * {@link java.lang.Boolean}.
+     * @see com.github.marschall.junitlambda.LambdaAssert#$$(String, java.util.function.Predicate)
+     * @see org.junit.Assert#assertThat(String, Object, org.hamcrest.Matcher)
      */
-    public static void assertThat(String message, Callable<Boolean> callable) throws AssertionError {
+    public static void assertThat(String msg, Callable<Boolean> callable) throws AssertionError {
         try {
-            assertTrue(message, callable.call());
+            assertTrue(msg, callable.call());
         } catch(Exception e) {
-            throw new AssertionError(message != null ? message : "Error in Test", e);
+            throw new AssertionError(msg != null ? msg : "Error in Test", e);
         }
     }
 
     /**
-     * TODO AC: JavaDoc
+     * Asserts that <code>callable</code> is satisfied. If not, an {@link AssertionError}
+     * is thrown with the reason and information about the matcher and failing value.
+     * Example:
+     * <p>
+     * <pre>
+     *   assertThat($$(&quot;equals one&quot;, () -> 0 == 1)); // fails:
+     *     // failure message:
+     *     // Why isn't zero the same as one?
+     *     // Predicate: equals one
+     *   assertThat(&quot;One equals one.&quot;, $$(&quot;equals one&quot;, () -> 1 == 1)); // passes
+     * </pre>
      *
-     * @param callable
+     * @param callable The {@link java.util.concurrent.Callable} to be called. Must be of the generic type
+     * {@link java.lang.Boolean}.
+     * @see com.github.marschall.junitlambda.LambdaAssert#$$(String, java.util.function.Predicate)
+     * @see org.junit.Assert#assertThat(Object, org.hamcrest.Matcher)
      */
     public static void assertThat(Callable<Boolean> callable) throws AssertionError {
         assertThat(null, callable);
@@ -294,7 +322,7 @@ public final class LambdaAssert {
      * @param message the identifying message for the {@link AssertionError} ({@code null} okay)
      * @param block   block of code to be executed
      */
-    public static void assertFaiure(String message, Block block) {
+    public static void assertFailure(String message, Block block) {
         boolean fail = false;
         try {
             block.value();
@@ -315,8 +343,8 @@ public final class LambdaAssert {
      *
      * @param block block of code to be executed
      */
-    public static void assertFaiure(Block block) {
-        assertFaiure(null, block);
+    public static void assertFailure(Block block) {
+        assertFailure(null, block);
     }
 
     /**

@@ -4,7 +4,6 @@ import com.github.marschall.junitlambda.annotations.ParallelTesting;
 import com.github.marschall.junitlambda.runner.Java8JUnitTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import sun.jvm.hotspot.utilities.Assert;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -50,14 +49,14 @@ public class LambdaAssertTest {
 
     @Test
     public void voidDoesNotRaiseRuntime() {
-        assertFaiure(() ->
+        assertFailure(() ->
                 assertVoidRaises(() -> {
                 }, RuntimeException.class));
     }
 
     @Test
     public void voidDoesRaiseWrongRuntime() {
-        assertFaiure(() ->
+        assertFailure(() ->
                 assertVoidRaises(() -> {
                     throw new NullPointerException();
                 }, IllegalArgumentException.class));
@@ -65,7 +64,7 @@ public class LambdaAssertTest {
 
     @Test
     public void voidDoesRaiseCheckedInsteadOfRuntime() {
-        assertFaiure(() ->
+        assertFailure(() ->
                 assertVoidRaises(() -> {
                     throw new IOException();
                 }, RuntimeException.class));
@@ -108,7 +107,7 @@ public class LambdaAssertTest {
 
     @Test
     public void assertionErrorNotRaisedByVoid() {
-        assertFaiure(() ->
+        assertFailure(() ->
                 assertVoidRaises(() -> {
                 }, AssertionError.class));
     }
@@ -117,15 +116,13 @@ public class LambdaAssertTest {
 
     @Test
     public void doesNotRaiseRuntime() {
-        assertFaiure(() ->
-                assertRaises(() -> {
-                    return null;
-                }, RuntimeException.class));
+        assertFailure(() ->
+                assertRaises(() -> null, RuntimeException.class));
     }
 
     @Test
     public void doesRaiseWrongRuntime() {
-        assertFaiure(() ->
+        assertFailure(() ->
                 assertRaises(() -> {
                     throw new NullPointerException();
                 }, IllegalArgumentException.class));
@@ -133,7 +130,7 @@ public class LambdaAssertTest {
 
     @Test
     public void doesRaiseCheckedInsteadOfRuntime() {
-        assertFaiure(() ->
+        assertFailure(() ->
                 assertRaises(() -> {
                     throw new IOException();
                 }, RuntimeException.class));
@@ -176,45 +173,43 @@ public class LambdaAssertTest {
 
     @Test
     public void assertionErrorNotRaised() {
-        assertFaiure(() ->
-                assertRaises(() -> {
-                    return null;
-                }, AssertionError.class));
+        assertFailure(() ->
+                assertRaises(() -> null, AssertionError.class));
     }
 
     // Test methods for iterables, collections and maps
 
     @Test
     public void testAssertForAllIterablePositive() {
-        assertForAll(messages, m -> m.getSeverity() != Messages.Severity.FATAL);
+        assertForEach(messages, m -> m.getSeverity() != Messages.Severity.FATAL);
     }
 
     @Test
     public void testAssertForAllIterableNegative() {
-        assertFaiure(() ->
-                assertForAll("Failed", messages, m -> m.getReason().equals("")));
+        assertFailure(() ->
+                assertForEach("Failed", messages, m -> m.getReason().equals("")));
     }
 
     @Test
     public void testAssertForAllCollectionPositive() {
-        assertForAll(names, n -> n.length() <= 5);
+        assertForEach(names, n -> n.length() <= 5);
     }
 
     @Test
     public void testAssertForAllCollectionNegative() {
-        assertFaiure(() ->
-                assertForAll("Failed", names, n -> n.toLowerCase().contains("a")));
+        assertFailure(() ->
+                assertForEach("Failed", names, n -> n.toLowerCase().contains("a")));
     }
 
     @Test
     public void testAssertForAllMapPositive() {
-        assertForAll(ages, a -> a < 100);
+        assertForEach(ages, a -> a < 100);
     }
 
     @Test
     public void testAssertForAllMapNegative() {
-        assertFaiure(() ->
-                assertForAll("Failed", ages, a -> a % 2 == 1));
+        assertFailure(() ->
+                assertForEach("Failed", ages, a -> a % 2 == 1));
     }
 
     // Tests for single predicates
@@ -227,24 +222,26 @@ public class LambdaAssertTest {
 
     @Test
     public void testAssertThatNegative() {
-        assertFaiure(() -> assertThat(names, n -> n.contains("Greg")));
+        assertFailure(() -> assertThat(names, n -> n.contains("Greg")));
     }
 
     // Tests for assertFailure
 
     @Test
     public void testAssertFailurePositive() {
-        assertFaiure(() -> assertTrue(false));
+        assertFailure(() -> assertTrue(false));
     }
 
     @Test(expected = AssertionError.class)
     public void testAssertFailureNegative() {
-        assertFaiure(() -> {});
+        assertFailure(() -> {
+        });
     }
 }
 
 /**
- * TODO AC: JavaDoc
+ * A test class representing a non-standard {@link java.lang.Iterable}. In this case it wrapps a List of
+ * {@link com.github.marschall.junitlambda.Messages.Message} objects, each of which has a set of properties.
  *
  * @author Alasdair Collinson
  */
@@ -266,6 +263,10 @@ class Messages implements Iterable<Messages.Message> {
     }
 
     @SuppressWarnings("unused")
+    /**
+     * A test class representing a message object. Every message has a title, a reason, an additional text and a
+     * severety. None of these are however null safe, so use with care.
+     */
     static class Message {
         private String title, reason, text;
         private Severity severity;

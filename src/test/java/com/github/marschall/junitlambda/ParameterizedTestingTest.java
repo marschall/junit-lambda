@@ -32,13 +32,10 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Alasdair Collinson
  */
-//@RunWith(JUnitParamsRunner.class)
 @RunWith(Java8JUnitTestRunner.class)
 @ParallelTesting(parallel = false)
 public class ParameterizedTestingTest {
-
-    /*
-    @Ignore
+/*
     @FirstTest
     public void firstTest() {
         assertTrue(true);
@@ -66,9 +63,10 @@ public class ParameterizedTestingTest {
                 ZonedDateTime.now().plusHours(3).withZoneSameInstant(ZoneId.of("-1"))
         );
     }
-
+*/
     @Test
-    @Parameters(source = TestDataProvider.class)
+    @ParameterRecord({"Hello", "Hell‚"})
+    @Parameters(source = ThirdTestDataProvider.class)
     public void thirdTestWithParameters(String first, String second) {
         Set<Character> firstSet = new HashSet<>();
         for(Character c : first.toCharArray()) {
@@ -88,7 +86,7 @@ public class ParameterizedTestingTest {
             return common >= 3;
         }));
     }
-
+/*
     @Test
     @Parameters
     public void fourthTestWithParameters(int number, boolean even) {
@@ -100,20 +98,28 @@ public class ParameterizedTestingTest {
     private Object[] parametersForFourthTestWithParameters() {
         return IntStream.range(1, 10).mapToObj(i -> $(i, i % 2 == 0)).toArray();
     }
-    */
 
     @Test
-    @ParameterRecord({"eins", "2", "3.0"})
-    @ParameterRecord({"one", "2", "3.0"})
+    @ParameterRecord(method = "getParamsForFifthTestHere")
+    @ParameterRecord({"eins", "2", "3.0"}) // German
+    @ParameterRecord({"one", "2", "3.0"}) // English
+    @ParameterRecord(source = FifthTestDataProvider.class)
     public void fithTestWithParameters(String one, int two, Double three) {
-        assertThat(one, input -> Arrays.asList("eins", "one").contains(input));
+        assertThat(one, input -> Arrays.asList("eins", "one", "uno", "un", "unos").contains(input));
         assertThat(() -> two == 2);
         assertThat(() -> three == 3.0);
+    }
+
+    public Object[] getParamsForFifthTestHere() {
+        return $(
+                $("uno", "2", "3.0"), // Spanish
+                $("un", "2", "3.0") // French
+        );
     }
 
     @LastTest
     public void lastTest() {
         assertTrue(true);
     }
-
+*/
 }
