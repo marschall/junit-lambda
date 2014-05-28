@@ -279,16 +279,16 @@ public final class LambdaAssert {
      *   assertThat(&quot;One equals one.&quot;, $$(&quot;equals one&quot;, () -> 1 == 1)); // passes
      * </pre>
      *
-     * @param msg the identifying message for the {@link AssertionError} (<code>null</code> okay)
+     * @param msg      the identifying message for the {@link AssertionError} (<code>null</code> okay)
      * @param callable the {@link java.util.concurrent.Callable} to be called. Must be of the generic type
-     * {@link java.lang.Boolean}.
+     *                 {@link java.lang.Boolean}.
      * @see com.github.marschall.junitlambda.LambdaAssert#$$(String, java.util.function.Predicate)
      * @see org.junit.Assert#assertThat(String, Object, org.hamcrest.Matcher)
      */
     public static void assertThat(String msg, Callable<Boolean> callable) throws AssertionError {
         try {
             assertTrue(msg, callable.call());
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new AssertionError(msg != null ? msg : "Error in Test", e);
         }
     }
@@ -307,7 +307,7 @@ public final class LambdaAssert {
      * </pre>
      *
      * @param callable The {@link java.util.concurrent.Callable} to be called. Must be of the generic type
-     * {@link java.lang.Boolean}.
+     *                 {@link java.lang.Boolean}.
      * @see com.github.marschall.junitlambda.LambdaAssert#$$(String, java.util.function.Predicate)
      * @see org.junit.Assert#assertThat(Object, org.hamcrest.Matcher)
      */

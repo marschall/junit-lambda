@@ -50,144 +50,152 @@ public class LambdaAssertTest {
     @Test
     public void voidDoesNotRaiseRuntime() {
         assertFailure(() ->
-                assertVoidRaises(() -> {
-                }, RuntimeException.class));
+                assertVoidRaises(
+                        () -> {},
+                        RuntimeException.class));
     }
 
     @Test
     public void voidDoesRaiseWrongRuntime() {
         assertFailure(() ->
-                assertVoidRaises(() -> {
-                    throw new NullPointerException();
-                }, IllegalArgumentException.class));
+                assertVoidRaises(
+                        () -> { throw new NullPointerException(); },
+                        IllegalArgumentException.class));
     }
 
     @Test
     public void voidDoesRaiseCheckedInsteadOfRuntime() {
         assertFailure(() ->
-                assertVoidRaises(() -> {
-                    throw new IOException();
-                }, RuntimeException.class));
+                assertVoidRaises(
+                        () -> { throw new IOException(); },
+                        RuntimeException.class));
     }
 
     @Test
     public void voidDoesRaiseRuntimeExact() {
-        assertVoidRaises(() -> {
-            throw new RuntimeException();
-        }, RuntimeException.class);
+        assertVoidRaises(
+                () -> { throw new RuntimeException(); },
+                RuntimeException.class);
     }
 
     @Test
     public void voidDoesRaiseRuntimeSubclass() {
-        assertVoidRaises(() -> {
-            throw new IndexOutOfBoundsException();
-        }, RuntimeException.class);
+        assertVoidRaises(
+                () -> { throw new IndexOutOfBoundsException(); },
+                RuntimeException.class);
     }
 
     @Test
     public void voidDoesRaiseCheckedExact() {
-        assertVoidRaises(() -> {
-            throw new IOException();
-        }, IOException.class);
+        assertVoidRaises(
+                () -> { throw new IOException(); },
+                IOException.class);
     }
 
     @Test
     public void voidDoesRaiseCheckedSubclass() {
-        assertVoidRaises(() -> {
-            throw new FileNotFoundException();
-        }, IOException.class);
+        assertVoidRaises(
+                () -> { throw new FileNotFoundException(); },
+                IOException.class);
     }
 
     @Test
     public void assertionErrorRaisedByVoid() {
-        assertVoidRaises(() -> {
-            throw new AssertionError();
-        }, AssertionError.class);
+        assertVoidRaises(
+                () -> { throw new AssertionError(); },
+                AssertionError.class);
     }
 
     @Test
     public void assertionErrorNotRaisedByVoid() {
-        assertFailure(() ->
-                assertVoidRaises(() -> {
-                }, AssertionError.class));
+        assertFailure(
+                () -> assertVoidRaises(
+                        () -> {},
+                        AssertionError.class));
     }
 
     // Test methods for functions with return values
 
     @Test
     public void doesNotRaiseRuntime() {
-        assertFailure(() ->
-                assertRaises(() -> null, RuntimeException.class));
+        assertFailure(
+                () -> assertRaises(
+                        () -> null,
+                        RuntimeException.class));
     }
 
     @Test
     public void doesRaiseWrongRuntime() {
-        assertFailure(() ->
-                assertRaises(() -> {
-                    throw new NullPointerException();
-                }, IllegalArgumentException.class));
+        assertFailure(
+                () -> assertRaises(
+                        () -> { throw new NullPointerException(); },
+                        IllegalArgumentException.class));
     }
 
     @Test
     public void doesRaiseCheckedInsteadOfRuntime() {
-        assertFailure(() ->
-                assertRaises(() -> {
-                    throw new IOException();
-                }, RuntimeException.class));
+        assertFailure(
+                () -> assertRaises(
+                        () -> { throw new IOException(); },
+                        RuntimeException.class));
     }
 
     @Test
     public void doesRaiseRuntimeExact() {
-        assertRaises(() -> {
-            throw new RuntimeException();
-        }, RuntimeException.class);
+        assertRaises(
+                () -> { throw new RuntimeException(); },
+                RuntimeException.class);
     }
 
     @Test
     public void doesRaiseRuntimeSubclass() {
-        assertRaises(() -> {
-            throw new IndexOutOfBoundsException();
-        }, RuntimeException.class);
+        assertRaises(
+                () -> { throw new IndexOutOfBoundsException(); },
+                RuntimeException.class);
     }
 
     @Test
     public void doesRaiseCheckedExact() {
-        assertRaises(() -> {
-            throw new IOException();
-        }, IOException.class);
+        assertRaises(
+                () -> { throw new IOException(); },
+                IOException.class);
     }
 
     @Test
     public void doesRaiseCheckedSubclass() {
-        assertRaises(() -> {
-            throw new FileNotFoundException();
-        }, IOException.class);
+        assertRaises(
+                () -> { throw new FileNotFoundException(); },
+                IOException.class);
     }
 
     @Test
     public void assertionErrorRaised() {
-        assertRaises(() -> {
-            throw new AssertionError();
-        }, AssertionError.class);
+        assertRaises(
+                () -> { throw new AssertionError(); },
+                AssertionError.class);
     }
 
     @Test
     public void assertionErrorNotRaised() {
-        assertFailure(() ->
-                assertRaises(() -> null, AssertionError.class));
+        assertFailure(
+                () -> assertRaises(
+                        () -> null,
+                        AssertionError.class));
     }
 
     // Test methods for iterables, collections and maps
 
     @Test
     public void testAssertForAllIterablePositive() {
-        assertForEach(messages, m -> m.getSeverity() != Messages.Severity.FATAL);
+        assertForEach(
+                messages, m -> m.getSeverity() != Messages.Severity.FATAL);
     }
 
     @Test
     public void testAssertForAllIterableNegative() {
-        assertFailure(() ->
-                assertForEach("Failed", messages, m -> m.getReason().equals("")));
+        assertFailure(
+                () -> assertForEach("Failed",
+                        messages, m -> m.getReason().equals("")));
     }
 
     @Test
@@ -197,8 +205,9 @@ public class LambdaAssertTest {
 
     @Test
     public void testAssertForAllCollectionNegative() {
-        assertFailure(() ->
-                assertForEach("Failed", names, n -> n.toLowerCase().contains("a")));
+        assertFailure(
+                () -> assertForEach("Failed",
+                        names, n -> n.toLowerCase().contains("a")));
     }
 
     @Test
@@ -208,8 +217,9 @@ public class LambdaAssertTest {
 
     @Test
     public void testAssertForAllMapNegative() {
-        assertFailure(() ->
-                assertForEach("Failed", ages, a -> a % 2 == 1));
+        assertFailure(
+                () -> assertForEach("Failed", ages,
+                        a -> a % 2 == 1));
     }
 
     // Tests for single predicates
