@@ -8,6 +8,7 @@ import com.github.marschall.junitlambda.runner.Java8JUnitTestRunner;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +20,9 @@ import java.time.ZonedDateTime;
 import java.time.chrono.ChronoZonedDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import static com.github.marschall.junitlambda.LambdaAssert.$$;
@@ -63,7 +66,7 @@ public class ParameterizedTestingTest {
                 ZonedDateTime.now().plusHours(3).withZoneSameInstant(ZoneId.of("-1"))
         );
     }
-*/
+
     @Test
     @ParameterRecord({"Hello", "Hell‚"})
     @Parameters(source = ThirdTestDataProvider.class)
@@ -86,7 +89,7 @@ public class ParameterizedTestingTest {
             return common >= 3;
         }));
     }
-/*
+
     @Test
     @Parameters
     public void fourthTestWithParameters(int number, boolean even) {
@@ -122,4 +125,21 @@ public class ParameterizedTestingTest {
         assertTrue(true);
     }
 */
+    private static List<String> words = Arrays.asList("Hello", "World");
+    private static int counter = 0;
+
+    public static Supplier<Object[]> supplier = () -> {
+        if(counter < words.size()) {
+            return $(words.get(counter++));
+        } else {
+            return null;
+        }
+    };
+
+    @ParameterRecord(lambda = "supplier")
+    @Test
+    public void sixthTestWithParameters(String word) {
+        System.out.println("Word: " + word);
+        Assert.assertNotNull(word);
+    }
 }

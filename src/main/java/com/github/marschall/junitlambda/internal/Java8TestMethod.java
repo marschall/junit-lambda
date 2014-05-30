@@ -52,7 +52,10 @@ public class Java8TestMethod extends TestMethod {
     }
 
     public static List<TestMethod> listFrom(List<FrameworkMethod> annotatedMethods, TestClass testClass) {
-        return annotatedMethods.stream().map(frameworkMethod -> new Java8TestMethod(frameworkMethod, testClass)).collect(Collectors.toList());
+        return annotatedMethods
+                .stream()
+                .map(frameworkMethod -> new Java8TestMethod(frameworkMethod, testClass))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -66,8 +69,11 @@ public class Java8TestMethod extends TestMethod {
 
             // add the parameters from source files
             params.addAll(ParameterExtractor.paramsFromSource(parametersAnnotation, parameterRecordsAnnotation, frameworkMethod()));
-            // and now add the parameters from "parametersFor"-methods
+            // and now add the parameters from "parametersFor" methods or ones named in the annotations
             params.addAll(ParameterExtractor.paramsFromMethod(ParameterExtractor.toList(testClass), parametersAnnotation, parameterRecordsAnnotation, frameworkMethod()));
+            // finally add the parameters from the "lambda" field in the @ParameterRecord-Annotation
+            params.addAll(ParameterExtractor.paramsFromLambda(testClass, parameterRecordsAnnotation, frameworkMethod()));
+            // Test whether there are any parameters
             if (params.isEmpty()) {
                 throw new RuntimeException("Could not find parameters for " + frameworkMethod() + " so no params were used.");
             }
@@ -87,6 +93,7 @@ public class Java8TestMethod extends TestMethod {
     @Override
     public boolean isParameterised() {
         return super.isParameterised()
-                || frameworkMethod().getMethod().isAnnotationPresent(ParameterRecords.class);
+                || frameworkMethod().getMethod().isAnnotationPresent(ParameterRecords.class)
+                || frameworkMethod().getMethod().isAnnotationPresent((ParameterRecord.class));
     }
 }

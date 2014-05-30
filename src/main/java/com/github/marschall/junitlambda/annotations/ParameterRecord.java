@@ -81,5 +81,5 @@ public @interface ParameterRecord {
      *
      * @return TODO
      */
-    String lambdas() default "";
+    String lambda() default "";
 }

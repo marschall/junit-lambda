@@ -26,7 +26,19 @@ import static org.junit.Assert.assertTrue;
 public class ParallelTestingTest {
     private static final Logger LOG = LoggerFactory.getLogger(ParallelTestingTest.class);
 
-    private static Set<Integer> testsRun = new HashSet<>();
+    private static final Object lock = new Object();
+
+    private static Set<Integer> testsRunning = new HashSet<>(),
+            testsRun = new HashSet<>();
+
+    private void test(int seconds) {
+        LOG.trace("Test {} starting", seconds);
+        markAsRunning(seconds);
+        waitFor(seconds);
+        LOG.trace("Test {}, currently running: {}", seconds, testsRunning.toArray());
+        assertTrue(canMarkAsDone(seconds));
+        LOG.trace("Test {} ending, currently active: {}", seconds, testsRunning);
+    }
 
     private static void waitFor(int seconds) {
         final long startedAt = System.currentTimeMillis();
@@ -37,12 +49,21 @@ public class ParallelTestingTest {
         } while (currentTime - startedAt > waitFor);
     }
 
-    private static synchronized boolean canMarkAsDone(int i) {
-        if (testsRun.contains(i)) {
-            return false;
-        } else {
-            testsRun.add(i);
-            return true;
+    private static boolean canMarkAsDone(int id) {
+        synchronized (lock) {
+            if (testsRun.contains(id)) {
+                return false;
+            } else {
+                testsRun.add(id);
+                testsRunning.remove(id);
+                return true;
+            }
+        }
+    }
+
+    private static void markAsRunning(int id) {
+        synchronized (lock) {
+            testsRunning.add(id);
         }
     }
 
@@ -78,12 +99,5 @@ public class ParallelTestingTest {
         LOG.trace("Running final test");
         assertThat(testsRun, $$("4 tests run", s -> s.size() == 4));
         LOG.trace("Finished final test");
-    }
-
-    private void test(int seconds) {
-        LOG.trace("Test {} starting", seconds);
-        waitFor(seconds);
-        assertTrue(canMarkAsDone(seconds));
-        LOG.trace("Test {} ending", seconds);
     }
 }

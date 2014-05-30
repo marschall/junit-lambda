@@ -25,8 +25,7 @@ public abstract class ParameterisedJava8TestRunner extends ParameterisedTestClas
 
     public ParameterisedJava8TestRunner(TestClass testClass, List<Class<? extends Annotation>> testAnnotations) {
         super(testClass);
-        //this.testAnnotations = testAnnotations;
-        this.testAnnotations = Arrays.asList(Test.class);
+        this.testAnnotations = testAnnotations;
         reallyComputeTestMethods(testClass);
         fillTestMethodsMap();
         computeFrameworkMethods();
