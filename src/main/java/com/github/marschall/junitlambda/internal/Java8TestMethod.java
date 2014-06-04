@@ -72,7 +72,7 @@ public class Java8TestMethod extends TestMethod {
             // and now add the parameters from "parametersFor" methods or ones named in the annotations
             params.addAll(ParameterExtractor.paramsFromMethod(ParameterExtractor.toList(testClass), parametersAnnotation, parameterRecordsAnnotation, frameworkMethod()));
             // finally add the parameters from the "lambda" field in the @ParameterRecord-Annotation
-            params.addAll(ParameterExtractor.paramsFromLambda(testClass, parameterRecordsAnnotation, frameworkMethod()));
+            params.addAll(ParameterExtractor.paramsFromLambda(testClass, parameterRecordsAnnotation));
             // Test whether there are any parameters
             if (params.isEmpty()) {
                 throw new RuntimeException("Could not find parameters for " + frameworkMethod() + " so no params were used.");

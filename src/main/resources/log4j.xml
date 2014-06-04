@@ -10,7 +10,7 @@
     </appender>
 
     <root>
-        <level value="DEBUG"/>
+        <level value="TRACE"/>
         <appender-ref ref="consoleAppender"/>
     </root>
 </log4j:configuration>

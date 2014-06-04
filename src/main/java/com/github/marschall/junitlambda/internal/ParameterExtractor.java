@@ -217,10 +217,13 @@ class ParameterExtractor {
      * TODO AC: JavaDoc
      *
      * @param parameterRecordsAnnotation
-     * @param frameworkMethod
      * @return
      */
-    static List<Object> paramsFromLambda(Class<?> classWithLambdas, ParameterRecords parameterRecordsAnnotation, FrameworkMethod frameworkMethod) {
+    static List<Object> paramsFromLambda(Class<?> classWithLambdas, ParameterRecords parameterRecordsAnnotation) {
+        if(parameterRecordsAnnotation == null) {
+            return toList();
+        }
+
         List<String> lambdaAnnotations = toList();
         for (ParameterRecord record : parameterRecordsAnnotation.value()) {
             String lambda = record.lambda();

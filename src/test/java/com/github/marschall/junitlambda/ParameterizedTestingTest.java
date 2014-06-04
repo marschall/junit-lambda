@@ -1,23 +1,14 @@
 package com.github.marschall.junitlambda;
 
-import com.github.marschall.junitlambda.annotations.LastTest;
-import com.github.marschall.junitlambda.annotations.FirstTest;
 import com.github.marschall.junitlambda.annotations.ParallelTesting;
 import com.github.marschall.junitlambda.annotations.ParameterRecord;
 import com.github.marschall.junitlambda.runner.Java8JUnitTestRunner;
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.chrono.ChronoZonedDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -28,7 +19,6 @@ import java.util.stream.IntStream;
 import static com.github.marschall.junitlambda.LambdaAssert.$$;
 import static com.github.marschall.junitlambda.LambdaAssert.assertThat;
 import static junitparams.JUnitParamsRunner.$;
-import static org.junit.Assert.assertTrue;
 
 /**
  * TODO AC: JavaDoc
@@ -65,24 +55,24 @@ public class ParameterizedTestingTest {
                 LocalDate.now().plusDays(1).atStartOfDay(ZoneId.of("+1")),
                 ZonedDateTime.now().plusHours(3).withZoneSameInstant(ZoneId.of("-1"))
         );
-    }
+    }*/
 
     @Test
     @ParameterRecord({"Hello", "Hell‚"})
     @Parameters(source = ThirdTestDataProvider.class)
     public void thirdTestWithParameters(String first, String second) {
         Set<Character> firstSet = new HashSet<>();
-        for(Character c : first.toCharArray()) {
+        for (Character c : first.toCharArray()) {
             firstSet.add(c);
         }
         Set<Character> secondSet = new HashSet<>();
-        for(Character c : second.toCharArray()) {
+        for (Character c : second.toCharArray()) {
             secondSet.add(c);
         }
         assertThat(Pair.of(firstSet, secondSet), $$("at least three identical characters", p -> {
             int common = 0;
-            for(Character c : p.getLeft()) {
-                if(p.getRight().contains(c)) {
+            for (Character c : p.getLeft()) {
+                if (p.getRight().contains(c)) {
                     common++;
                 }
             }
@@ -102,7 +92,7 @@ public class ParameterizedTestingTest {
         return IntStream.range(1, 10).mapToObj(i -> $(i, i % 2 == 0)).toArray();
     }
 
-    @Test
+    /*@Test
     @ParameterRecord(method = "getParamsForFifthTestHere")
     @ParameterRecord({"eins", "2", "3.0"}) // German
     @ParameterRecord({"one", "2", "3.0"}) // English
@@ -125,12 +115,15 @@ public class ParameterizedTestingTest {
         assertTrue(true);
     }
 */
-    private static List<String> words = Arrays.asList("Hello", "World");
+    /*private static List<String> woerter = Arrays.asList("Hello", "World");
     private static int counter = 0;
 
     public static Supplier<Object[]> supplier = () -> {
-        if(counter < words.size()) {
-            return $(words.get(counter++));
+        if(counter < woerter.size()) {
+            return $(
+                    woerter.get(counter),
+                    woerter.get(counter++).length()
+            );
         } else {
             return null;
         }
@@ -138,8 +131,32 @@ public class ParameterizedTestingTest {
 
     @ParameterRecord(lambda = "supplier")
     @Test
-    public void sixthTestWithParameters(String word) {
+    public void sixthTestWithParameters(String word, int length) {
         System.out.println("Word: " + word);
         Assert.assertNotNull(word);
+        Assert.assertTrue(word.length() == length);
+    }*/
+
+    private static List<String> woerter =
+            Arrays.asList("Hallo", "Welt");
+    private static int counter = 0;
+
+    public static Supplier<Object[]> supplier = () -> {
+        if (counter < woerter.size()) {
+            return new Object[]{
+                    woerter.get(counter),
+                    woerter.get(counter++).length()
+            };
+        } else {
+            return null;
+        }
+    };
+
+    @ParameterRecord(lambda = "supplier")
+    @Test
+    public void testMitSupplier(String wort, int laenge) {
+        Assert.assertNotNull(wort);
+        Assert.assertTrue(wort.length() == laenge);
     }
+
 }
