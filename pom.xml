@@ -4,9 +4,10 @@
   <groupId>com.github.marschall</groupId>
   <artifactId>junit-lambda</artifactId>
   <version>0.2.0-SNAPSHOT</version>
-  <name>JUnit Lambda Extensions</name>
   <inceptionYear>2013</inceptionYear>
-  
+  <name>JUnit Lambda Extensions</name>
+  <description>JUnit extensions that make use of Java 8 lambdas.</description>
+
   <prerequisites>
     <maven>2.2.1</maven>
   </prerequisites>
@@ -45,7 +46,7 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.12</version>
-      <optional>true</optional>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
   
@@ -76,6 +77,7 @@
         <configuration>
           <links>
             <link>http://docs.oracle.com/javase/7/docs/api/</link>
+            <link>http://junit.sourceforge.net/javadoc/</link>
           </links>
         </configuration>
         <executions>
