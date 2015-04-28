@@ -1,4 +1,4 @@
-JUnit λ
+JUnit λ [![Build Status](https://travis-ci.org/marschall/junit-lambda.png?branch=master)](https://travis-ci.org/marschall/junit-lambda) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/cz.jirutka.rsql/rsql-parser/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/junit-lambda)
 =======
 JUnit extensions build on Java 8 lambdas. In theory it works with Java 7 but you'll get most of the value with Java 8 lambdas.
 
