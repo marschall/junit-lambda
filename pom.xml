@@ -9,7 +9,7 @@
   <description>JUnit extensions that make use of Java 8 lambdas.</description>
 
   <prerequisites>
-    <maven>2.2.1</maven>
+    <maven>3.0.3</maven>
   </prerequisites>
 
   <url>https://github.com/marschall/junit-lambda</url>
@@ -139,7 +139,7 @@
         <plugin>
           <groupId>org.jboss.jandex</groupId>
           <artifactId>jandex-maven-plugin</artifactId>
-          <version>1.0.1</version>
+          <version>1.0.3</version>
         </plugin>
         <plugin>
           <artifactId>maven-source-plugin</artifactId>
