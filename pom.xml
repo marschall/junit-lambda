@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.marschall</groupId>
   <artifactId>junit-lambda</artifactId>
-  <version>0.2.0-SNAPSHOT</version>
+  <version>0.2.0</version>
   <inceptionYear>2013</inceptionYear>
   <name>JUnit Lambda Extensions</name>
   <description>JUnit extensions that make use of Java 8 lambdas.</description>
@@ -18,7 +18,7 @@
     <connection>scm:git:git@github.com:marschall/junit-lambda.git</connection>
     <developerConnection>scm:git:git@github.com:marschall/junit-lambda.git</developerConnection>
     <url>${project.url}</url>
-    <tag>HEAD</tag>
+    <tag>0.2.0</tag>
   </scm>
 
   <developers>
