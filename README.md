@@ -3,7 +3,15 @@ JUnit λ [![Build Status](https://travis-ci.org/marschall/junit-lambda.png?branc
 JUnit extensions build on Java 8 lambdas. In theory it works with Java 7 but you'll get most of the value with Java 8 lambdas.
 
 ```java
-    assertRaises(() -> anObject.aMethod(anArgument), IllegalArgumentException.class);
+import static com.github.marschall.junitlambda.LambdaAssert.assertRaises;
+import org.junit.Test;
+
+public final class JunitLambdaTest {
+    @Test
+    public void testNumberFormatException() {
+        assertRaises(() -> Long.parseLong("foo"), NumberFormatException.class);
+    }
+}
 ```
 
 ```xml
@@ -11,6 +19,7 @@ JUnit extensions build on Java 8 lambdas. In theory it works with Java 7 but you
     <groupId>com.github.marschall</groupId>
     <artifactId>junit-lambda</artifactId>
     <version>0.1.0</version>
+    <scope>test</scope>
 </dependency>
 ```
 
