@@ -31,10 +31,20 @@ public class ThrowsExceptionTest {
   public void negativeMessageMatch() {
     assertThat(() -> { throw new IllegalArgumentException("invalid");}, not(throwsException(IllegalArgumentException.class, hasMessage("valid"))));
   }
-  
+
   @Test
   public void positiveCauseMatch() {
     assertThat(this::throwExceptionWithCause, throwsException(RuntimeException.class, hasCause(IOException.class)));
+  }
+
+  @Test
+  public void multipleMatchersPositive() {
+    assertThat(this::throwExceptionWithCause, not(throwsException(RuntimeException.class, hasCause(IOException.class), hasMessage("io exception occurred"))));
+  }
+
+  @Test
+  public void multipleMatchersNegative() {
+    assertThat(this::throwExceptionWithCause, throwsException(RuntimeException.class, hasCause(IOException.class), hasMessage("invalid")));
   }
 
   private void throwExceptionWithCause() {

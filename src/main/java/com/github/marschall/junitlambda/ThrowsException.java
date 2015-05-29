@@ -29,29 +29,44 @@ public final class ThrowsException<T extends Throwable> extends TypeSafeMatcher<
 
   private final Matcher<T> exceptionMatcher;
   private final Class<T> expected;
+  private final Matcher<T>[] moreMatchers;
 
-  private ThrowsException(Class<T> expected, Matcher<T> exceptionMatcher) {
+  private ThrowsException(Class<T> expected, Matcher<T> exceptionMatcher, Matcher<T>[] moreMatchers) {
     this.expected = expected;
     this.exceptionMatcher = exceptionMatcher;
+    this.moreMatchers = moreMatchers;
   }
 
   @Factory
   public static <T extends Throwable> Matcher<Block> throwsException(Class<T> expected) {
-    return new ThrowsException<>(expected, null);
+    return new ThrowsException<>(expected, null, null);
   }
-  
+
   @Factory
   public static <T extends Throwable> TypeSafeMatcher<Block> throwsException(Class<T> expected, Matcher<T> exceptionMatcher) {
-    return new ThrowsException<>(expected, exceptionMatcher);
+    return new ThrowsException<>(expected, exceptionMatcher, null);
+  }
+
+  @SafeVarargs
+  @Factory
+  public static <T extends Throwable> TypeSafeMatcher<Block> throwsException(Class<T> expected, Matcher<T> exceptionMatcher, Matcher<T>... moreMatchers) {
+    return new ThrowsException<>(expected, exceptionMatcher, moreMatchers);
   }
 
   @Override
   public void describeTo(Description description) {
-    description.appendText("throws exception");
+    description.appendText("throws exception ");
     description.appendValue(this.expected);
     if (this.exceptionMatcher != null) {
-      description.appendText("matching");
+      description.appendText(" matching ");
       description.appendDescriptionOf(exceptionMatcher);
+      if (this.moreMatchers != null && this.moreMatchers.length > 0) {
+        for (Matcher<T> matcher : moreMatchers) {
+          description.appendText(" and ");
+          description.appendDescriptionOf(matcher);
+        }
+
+      }
     }
   }
 
@@ -74,7 +89,17 @@ public final class ThrowsException<T extends Throwable> extends TypeSafeMatcher<
 
   private boolean catchException(Throwable exception) {
     if (this.exceptionMatcher != null) {
-      return this.exceptionMatcher.matches(exception);
+      if (!this.exceptionMatcher.matches(exception)) {
+        return false;
+      }
+      if (this.moreMatchers != null && this.moreMatchers.length > 0) {
+        for (Matcher<T> matcher : this.moreMatchers) {
+          if (matcher.matches(exception)) {
+            return false;
+          }
+        }
+      }
+      return true;
     } else {
       return true;
     }
