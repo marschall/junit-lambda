@@ -10,6 +10,12 @@ import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 
+/**
+ *
+ * @param <T>
+ * @see HasCause
+ * @see HasMessage
+ */
 public final class ThrowsException<T extends Throwable> extends TypeSafeMatcher<Block> {
 
   private static final MethodHandle CATCH_EXCEPTION;
@@ -82,11 +88,13 @@ public final class ThrowsException<T extends Throwable> extends TypeSafeMatcher<
     }
   }
 
+  @SuppressWarnings("unused") // called through a method handle
   private boolean callProtected(Block block) throws Exception {
     block.value();
     return false;
   }
 
+  @SuppressWarnings("unused") // called through a method handle
   private boolean catchException(Throwable exception) {
     if (this.exceptionMatcher != null) {
       if (!this.exceptionMatcher.matches(exception)) {

@@ -7,6 +7,15 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 
+/**
+ * A set of assertion methods useful for writing exception tests.
+ *
+ * Very similar to {@link org.junit.Assert}.
+ *
+ * @see AssertionError
+ * @see org.junit.Assert
+ * @since 4.0
+ */
 public final class LambdaAssert {
 
   private static final MethodHandle EAT_EXCEPTION;
@@ -52,7 +61,7 @@ public final class LambdaAssert {
       }
       return;
     }
-    
+
     MethodHandle call = MethodHandles.insertArguments(CALL_PROTECTED, 0, message, block, expected);
     MethodHandle verification = MethodHandles.catchException(call, expected, EAT_EXCEPTION);
     try {
@@ -61,7 +70,7 @@ public final class LambdaAssert {
       throw new AssertionError("unexpected exception: " + e.getClass() + " expected: " + expected, e);
     }
   }
-  
+
   /**
    * Asserts that the evaluation of a block throws an exception. If it
    * does not an {@link AssertionError} is thrown.
@@ -72,7 +81,8 @@ public final class LambdaAssert {
   public static void assertRaises(Block block, Class<? extends Throwable> expected) {
     assertRaises(null, block, expected);
   }
-  
+
+  @SuppressWarnings("unused") // called through a method handle
   private static void callProtected(String message, Block block, Class<? extends Throwable> expected) throws Exception {
     block.value();
     failNotRaised(message, expected);
@@ -82,6 +92,7 @@ public final class LambdaAssert {
     fail(formatNotRaised(message, expected, null));
   }
 
+  @SuppressWarnings("unused") // called through a method handle
   private static void eatException(Throwable exception) {
     // expected
   }
