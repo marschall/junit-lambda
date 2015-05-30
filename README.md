@@ -25,7 +25,7 @@ public final class JunitLambdaTest {
 }
 ```
 
-or a hamcrest matcher
+or the Hamcrest matcher `#throwsException`
 
 
 ```java
