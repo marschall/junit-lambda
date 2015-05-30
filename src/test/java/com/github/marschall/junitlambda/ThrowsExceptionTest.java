@@ -1,13 +1,15 @@
 package com.github.marschall.junitlambda;
 
-import static com.github.marschall.junitlambda.ThrowsException.throwsException;
-import static org.junit.Assert.assertThat;
-import static org.hamcrest.CoreMatchers.not;
-import static com.github.marschall.junitlambda.HasMessage.hasMessage;
 import static com.github.marschall.junitlambda.HasCause.hasCause;
+import static com.github.marschall.junitlambda.HasMessage.hasMessage;
+import static com.github.marschall.junitlambda.ThrowsException.throwsException;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 
+import org.hamcrest.Matcher;
 import org.junit.Test;
 
 public class ThrowsExceptionTest {
@@ -45,6 +47,14 @@ public class ThrowsExceptionTest {
   @Test
   public void multipleMatchersNegative() {
     assertThat(this::throwExceptionWithCause, throwsException(RuntimeException.class, hasCause(IOException.class), hasMessage("invalid")));
+  }
+
+  @Test
+  public void documentation() {
+    assertThat(() -> Long.parseLong("foo"), throwsException(NumberFormatException.class));
+    assertThat(() -> Long.parseLong("foo"), throwsException(NumberFormatException.class, hasMessage("For input string: \"foo\"")));
+    Matcher<NumberFormatException> noCause = (Matcher) nullValue();
+    assertThat(() -> Long.parseLong("foo"), throwsException(NumberFormatException.class, hasMessage("For input string: \"foo\""), hasCause(noCause)));
   }
 
   private void throwExceptionWithCause() {

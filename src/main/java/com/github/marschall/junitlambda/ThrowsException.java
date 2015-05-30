@@ -2,8 +2,8 @@ package com.github.marschall.junitlambda;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.invoke.MethodType;
 
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
@@ -11,10 +11,12 @@ import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 
 /**
+ * Tests if the argument block throws an exception.
  *
- * @param <T>
+ * @param <T> the expected throwable type
  * @see HasCause
  * @see HasMessage
+ * @see Block
  */
 public final class ThrowsException<T extends Throwable> extends TypeSafeMatcher<Block> {
 
@@ -43,20 +45,58 @@ public final class ThrowsException<T extends Throwable> extends TypeSafeMatcher<
     this.moreMatchers = moreMatchers;
   }
 
+  /**
+   * Creates a matcher that matches if the examined {@link Block} throws an exception
+   * of the specified <code>expectedExceptionClass</code>.
+   *
+   * <p>For example:
+   * <pre><code>assertThat(() -> Long.parseLong("foo"), throwsException(NumberFormatException.class));</code></pre>
+   *
+   * @param expectedExceptionClass
+   *     the expected exception type
+   */
   @Factory
-  public static <T extends Throwable> Matcher<Block> throwsException(Class<T> expected) {
-    return new ThrowsException<>(expected, null, null);
+  public static <T extends Throwable> Matcher<Block> throwsException(Class<T> expectedExceptionClass) {
+    return new ThrowsException<>(expectedExceptionClass, null, null);
   }
 
+  /**
+   * Creates a matcher that matches if the examined {@link Block} throws an exception
+   * of the specified <code>expectedExceptionClass</code> and is matched by the specified
+   * <code>exceptionMatcher</code>.
+   *
+   * <p>For example:
+   * <pre><code>assertThat(() -> Long.parseLong("foo"), throwsException(NumberFormatException.class, hasMessage("For input string: \"foo\"")));</code></pre>
+   *
+   * @param expectedExceptionClass
+   *     the expected exception type
+   * @param exceptionMatcher
+   *     the matcher to apply to the examined exception
+   */
   @Factory
-  public static <T extends Throwable> TypeSafeMatcher<Block> throwsException(Class<T> expected, Matcher<T> exceptionMatcher) {
-    return new ThrowsException<>(expected, exceptionMatcher, null);
+  public static <T extends Throwable> TypeSafeMatcher<Block> throwsException(Class<T> expectedExceptionClass, Matcher<T> exceptionMatcher) {
+    return new ThrowsException<>(expectedExceptionClass, exceptionMatcher, null);
   }
 
-  @SafeVarargs
+  /**
+   * Creates a matcher that matches if the examined {@link Block} throws an exception
+   * of the specified <code>expectedExceptionClass</code> and is matched by the specified
+   * <code>exceptionMatcher</code> and <code>additionalExceptionMatchers</code>.
+   *
+   * <p>For example:
+   * <pre><code>assertThat(() -> Long.parseLong("foo"), throwsException(NumberFormatException.class, hasMessage("For input string: \"foo\""), hasCause(nullValue())));</code></pre>
+   *
+   * @param expectedExceptionClass
+   *     the expected exception type
+   * @param exceptionMatcher
+   *     the matcher to apply to the examined exception
+   * @param additionalExceptionMatchers
+   *     additional matchers to apply to the examined exception
+   */
+  @SafeVarargs // we only read
   @Factory
-  public static <T extends Throwable> TypeSafeMatcher<Block> throwsException(Class<T> expected, Matcher<T> exceptionMatcher, Matcher<T>... moreMatchers) {
-    return new ThrowsException<>(expected, exceptionMatcher, moreMatchers);
+  public static <T extends Throwable> TypeSafeMatcher<Block> throwsException(Class<T> expectedExceptionClass, Matcher<T> exceptionMatcher, Matcher<T>... additionalExceptionMatchers) {
+    return new ThrowsException<>(expectedExceptionClass, exceptionMatcher, additionalExceptionMatchers);
   }
 
   @Override
@@ -71,7 +111,6 @@ public final class ThrowsException<T extends Throwable> extends TypeSafeMatcher<
           description.appendText(" and ");
           description.appendDescriptionOf(matcher);
         }
-
       }
     }
   }
@@ -102,7 +141,7 @@ public final class ThrowsException<T extends Throwable> extends TypeSafeMatcher<
       }
       if (this.moreMatchers != null && this.moreMatchers.length > 0) {
         for (Matcher<T> matcher : this.moreMatchers) {
-          if (matcher.matches(exception)) {
+          if (!matcher.matches(exception)) {
             return false;
           }
         }
