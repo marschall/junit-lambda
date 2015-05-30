@@ -5,6 +5,8 @@ import static com.github.marschall.junitlambda.HasMessage.hasMessage;
 import static com.github.marschall.junitlambda.ThrowsException.throwsException;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -41,12 +43,17 @@ public class ThrowsExceptionTest {
 
   @Test
   public void multipleMatchersPositive() {
-    assertThat(this::throwExceptionWithCause, not(throwsException(RuntimeException.class, hasCause(IOException.class), hasMessage("io exception occurred"))));
+    assertThat(this::throwExceptionWithCause, throwsException(RuntimeException.class, hasCause(IOException.class), hasMessage("io exception occurred")));
+  }
+
+  @Test
+  public void multipleMatchersPositiveDeep() {
+    assertThat(this::throwExceptionWithCause, throwsException(RuntimeException.class, hasCause(allOf(instanceOf(IOException.class), hasMessage("space exceeded")))));
   }
 
   @Test
   public void multipleMatchersNegative() {
-    assertThat(this::throwExceptionWithCause, throwsException(RuntimeException.class, hasCause(IOException.class), hasMessage("invalid")));
+    assertThat(this::throwExceptionWithCause, not(throwsException(RuntimeException.class, hasCause(IOException.class), hasMessage("invalid"))));
   }
 
   @Test
