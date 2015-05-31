@@ -26,6 +26,8 @@ public final class HasMessage<T extends Throwable> extends TypeSafeMatcher<T> {
    *
    * @param messageMatcher
    *     the matcher to apply to the examined exception message
+   * @param <T> the expected throwable type
+   * @return the matcher
    */
   @Factory
   public static <T extends Throwable> Matcher<T> hasMessage(Matcher<String> messageMatcher) {
@@ -41,6 +43,8 @@ public final class HasMessage<T extends Throwable> extends TypeSafeMatcher<T> {
    *
    * @param message
    *     the message that has to be equal to the exception message
+   * @param <T> the expected throwable type
+   * @return the matcher
    */
   @Factory
   public static <T extends Throwable> Matcher<T> hasMessage(String message) {

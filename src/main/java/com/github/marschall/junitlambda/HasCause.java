@@ -27,6 +27,9 @@ public final class HasCause<T extends Throwable> extends TypeSafeMatcher<T> {
    *
    * @param causeMatcher
    *     the matcher to apply to the examined exception cause
+   * @param <T> the expected throwable type
+   * @param <C> the expected cause type
+   * @return the matcher
    */
   @Factory
   public static <T extends Throwable, C extends Throwable> Matcher<T> hasCause(Matcher<C> causeMatcher) {
@@ -42,6 +45,8 @@ public final class HasCause<T extends Throwable> extends TypeSafeMatcher<T> {
    *
    * @param causeClass
    *     the class the exception cause has to be an instance of
+   * @param <T> the expected throwable type
+   * @return the matcher
    */
   @Factory
   public static <T extends Throwable> Matcher<T> hasCause(Class<? extends Throwable> causeClass) {

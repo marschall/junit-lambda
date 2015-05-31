@@ -50,10 +50,12 @@ public final class ThrowsException<T extends Throwable> extends TypeSafeMatcher<
    * of the specified <code>expectedExceptionClass</code>.
    *
    * <p>For example:
-   * <pre><code>assertThat(() -> Long.parseLong("foo"), throwsException(NumberFormatException.class));</code></pre>
+   * <pre><code>assertThat(() -&gt; Long.parseLong("foo"), throwsException(NumberFormatException.class));</code></pre>
    *
    * @param expectedExceptionClass
    *     the expected exception type
+   * @param <T> the expected throwable type
+   * @return the matcher
    */
   @Factory
   public static <T extends Throwable> Matcher<Block> throwsException(Class<T> expectedExceptionClass) {
@@ -66,12 +68,14 @@ public final class ThrowsException<T extends Throwable> extends TypeSafeMatcher<
    * <code>exceptionMatcher</code>.
    *
    * <p>For example:
-   * <pre><code>assertThat(() -> Long.parseLong("foo"), throwsException(NumberFormatException.class, hasMessage("For input string: \"foo\"")));</code></pre>
+   * <pre><code>assertThat(() -&gt; Long.parseLong("foo"), throwsException(NumberFormatException.class, hasMessage("For input string: \"foo\"")));</code></pre>
    *
    * @param expectedExceptionClass
    *     the expected exception type
    * @param exceptionMatcher
    *     the matcher to apply to the examined exception
+   * @param <T> the expected throwable type
+   * @return the matcher
    */
   @Factory
   public static <T extends Throwable> TypeSafeMatcher<Block> throwsException(Class<T> expectedExceptionClass, Matcher<T> exceptionMatcher) {
@@ -84,7 +88,7 @@ public final class ThrowsException<T extends Throwable> extends TypeSafeMatcher<
    * <code>exceptionMatcher</code> and <code>additionalExceptionMatchers</code>.
    *
    * <p>For example:
-   * <pre><code>assertThat(() -> Long.parseLong("foo"), throwsException(NumberFormatException.class, hasMessage("For input string: \"foo\""), hasCause(nullValue())));</code></pre>
+   * <pre><code>assertThat(() -&gt; Long.parseLong("foo"), throwsException(NumberFormatException.class, hasMessage("For input string: \"foo\""), hasCause(nullValue())));</code></pre>
    *
    * @param expectedExceptionClass
    *     the expected exception type
@@ -92,6 +96,8 @@ public final class ThrowsException<T extends Throwable> extends TypeSafeMatcher<
    *     the matcher to apply to the examined exception
    * @param additionalExceptionMatchers
    *     additional matchers to apply to the examined exception
+   * @param <T> the expected throwable type
+   * @return the matcher
    */
   @SafeVarargs // we only read
   @Factory
