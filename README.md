@@ -44,7 +44,7 @@ public final class JunitLambdaTest {
 <dependency>
     <groupId>com.github.marschall</groupId>
     <artifactId>junit-lambda</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
     <scope>test</scope>
 </dependency>
 ```
