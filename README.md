@@ -1,4 +1,4 @@
-JUnit λ [![Build Status](https://travis-ci.org/marschall/junit-lambda.png?branch=master)](https://travis-ci.org/marschall/junit-lambda) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/cz.jirutka.rsql/rsql-parser/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/junit-lambda)
+JUnit λ [![Build Status](https://travis-ci.org/marschall/junit-lambda.png?branch=master)](https://travis-ci.org/marschall/junit-lambda) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/junit-lambda/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/junit-lambda)
 =======
 JUnit extensions built on Java 8 lambdas. Helps to test exceptions and can be used instead of the following pattern:
 
